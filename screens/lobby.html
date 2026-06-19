@@ -1,0 +1,29 @@
+<div class="lobby-card">
+  <div class="lobby-title">NHIỀU NGƯỜI CHƠI</div>
+  <div class="lobby-sub">Đấu tốc độ xử lý sự cố — tối đa 30 người / phòng</div>
+
+  <div class="lobby-name-row">
+    <span class="lobby-name-label">Tên hiển thị</span>
+    <input id="mp-name-input" class="mp-input" type="text" maxlength="16" placeholder="Long" spellcheck="false"/>
+  </div>
+
+  <button class="btn-primary btn-mp-action" id="btn-create-room">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <rect x="1" y="1" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M7 4v6M4 7h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+    Tạo phòng mới
+  </button>
+
+  <div class="lobby-divider"><span>hoặc</span></div>
+
+  <div class="lobby-join-row">
+    <input id="mp-code-input" class="mp-input mp-code" type="text" maxlength="6"
+           placeholder="MÃ PHÒNG (6 KÝ TỰ)" spellcheck="false" autocomplete="off"/>
+    <button class="btn-secondary" id="btn-join-room">Tham gia</button>
+  </div>
+
+  <div id="mp-lobby-error" class="mp-error"></div>
+
+  <button class="btn-ghost" id="btn-lobby-back">← Về menu</button>
+</div>

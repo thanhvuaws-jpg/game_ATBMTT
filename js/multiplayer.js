@@ -144,9 +144,13 @@ const MP = {
     this.cleanup();
   },
 
-  cleanup() {
+  cleanupListeners() {
     this._listeners.forEach(({ ref, event, handler }) => ref.off(event, handler));
     this._listeners = [];
+  },
+
+  cleanup() {
+    this.cleanupListeners();
     this.roomCode   = null;
     this.isHost     = false;
   },

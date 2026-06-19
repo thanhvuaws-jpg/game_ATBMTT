@@ -501,19 +501,22 @@ function renderCh3Case() {
         <div class="ticket-desc">${Skills.applyKeywordHighlight(c.description)}</div>
       </div>
       <div class="ticket-footer">
-        <div class="ticket-actions">
-          <button class="action-btn btn-block"  id="act-block"  data-act="block">CHẶN</button>
-          <button class="action-btn btn-report" id="act-report" data-act="report">BÁO CÁO</button>
-          <button class="action-btn btn-allow"  id="act-allow"  data-act="allow">CHO QUA</button>
-          <div class="timer-wrap">
-            <svg class="timer-svg" viewBox="0 0 38 38">
-              <circle class="timer-bg"   cx="19" cy="19" r="18"/>
-              <circle class="timer-ring" id="timer-ring" cx="19" cy="19" r="18"/>
-              <text class="timer-label" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
-                    font-family="var(--font-mono)" font-size="11" fill="var(--text)"
-                    id="timer-num" transform="rotate(90,19,19)">${ch3TotalTime}</text>
-            </svg>
+        <div class="ticket-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+            <button class="action-btn btn-block"  id="act-block"  data-act="block">CHẶN</button>
+            <button class="action-btn btn-report" id="act-report" data-act="report">BÁO CÁO</button>
+            <button class="action-btn btn-allow"  id="act-allow"  data-act="allow">CHO QUA</button>
+            <div class="timer-wrap">
+              <svg class="timer-svg" viewBox="0 0 38 38">
+                <circle class="timer-bg"   cx="19" cy="19" r="18"/>
+                <circle class="timer-ring" id="timer-ring" cx="19" cy="19" r="18"/>
+                <text class="timer-label" x="50%" y="50%" dominant-baseline="middle" text-anchor="middle"
+                      font-family="var(--font-mono)" font-size="11" fill="var(--text)"
+                      id="timer-num" transform="rotate(90,19,19)">${ch3TotalTime}</text>
+              </svg>
+            </div>
           </div>
+          <button class="btn-confirm" id="act-confirm" disabled>XÁC NHẬN PHÁN QUYẾT</button>
         </div>
       </div>
       <div class="stamp-overlay" id="stamp-overlay"></div>
@@ -528,11 +531,52 @@ function renderCh3Case() {
   renderCh3Stats();
   Skills.applyElimination(c);
 
-  document.querySelectorAll('.action-btn').forEach(btn => {
+  const selectedActions = [];
+  const btnBlock = document.getElementById('act-block');
+  const btnReport = document.getElementById('act-report');
+  const btnAllow = document.getElementById('act-allow');
+  const btnConfirm = document.getElementById('act-confirm');
+
+  function updateConfirmState() {
+    if (btnConfirm) btnConfirm.disabled = (selectedActions.length === 0);
+  }
+
+  [btnBlock, btnReport, btnAllow].forEach(btn => {
+    if (!btn) return;
     btn.addEventListener('click', () => {
       if (State.ch3AwaitingNext) return;
-      handleCh3Action(btn.dataset.act, c);
+      Audio.click();
+      const act = btn.dataset.act;
+      if (act === 'allow') {
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          const idx = selectedActions.indexOf(act);
+          if (idx > -1) selectedActions.splice(idx, 1);
+        } else {
+          btn.classList.add('selected');
+          selectedActions.push(act);
+          if (btnBlock) { btnBlock.classList.remove('selected'); const i = selectedActions.indexOf('block'); if (i > -1) selectedActions.splice(i, 1); }
+          if (btnReport) { btnReport.classList.remove('selected'); const i = selectedActions.indexOf('report'); if (i > -1) selectedActions.splice(i, 1); }
+        }
+      } else {
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          const idx = selectedActions.indexOf(act);
+          if (idx > -1) selectedActions.splice(idx, 1);
+        } else {
+          btn.classList.add('selected');
+          selectedActions.push(act);
+          if (btnAllow) { btnAllow.classList.remove('selected'); const i = selectedActions.indexOf('allow'); if (i > -1) selectedActions.splice(i, 1); }
+        }
+      }
+      updateConfirmState();
     });
+  });
+
+  btnConfirm?.addEventListener('click', () => {
+    if (State.ch3AwaitingNext || selectedActions.length === 0) return;
+    Audio.click();
+    handleCh3Action(selectedActions, c);
   });
 
   document.getElementById('ch3-next')?.addEventListener('click', () => {
@@ -569,17 +613,41 @@ function handleCh3Action(action, caseData) {
   clearInterval(State.ch3TimerInterval);
   State.ch3AwaitingNext = true;
   document.querySelectorAll('.action-btn').forEach(b => b.disabled = true);
+  const btnConfirm = document.getElementById('act-confirm');
+  if (btnConfirm) btnConfirm.disabled = true;
 
-  const correct   = caseData.correct;
-  const isCorrect = action !== 'timeout' && correct.includes(action);
+  const isTimeout = action === 'timeout';
+  const selected = isTimeout ? [] : action;
+  const correct = caseData.correct;
+  
+  const isCorrect = !isTimeout && 
+                    selected.length === correct.length && 
+                    selected.every(val => correct.includes(val));
 
   // ── Stamp ──
   const overlay = document.getElementById('stamp-overlay');
   const ticket  = document.getElementById('current-ticket');
-  const stampMap = { block:'CHẶN', report:'BÁO CÁO', allow:'CHO QUA', timeout:'HẾT GIỜ' };
-  const clsMap   = { block:'stamp-block', report:'stamp-report', allow:'stamp-allow', timeout:'stamp-wrong' };
+  
+  let stampText = 'HẾT GIỜ';
+  let stampClass = 'stamp-wrong';
+  if (!isTimeout) {
+    if (selected.includes('block') && selected.includes('report')) {
+      stampText = 'CHẶN + BÁO CÁO';
+      stampClass = 'stamp-both';
+    } else if (selected.includes('block')) {
+      stampText = 'CHẶN';
+      stampClass = 'stamp-block';
+    } else if (selected.includes('report')) {
+      stampText = 'BÁO CÁO';
+      stampClass = 'stamp-report';
+    } else if (selected.includes('allow')) {
+      stampText = 'CHO QUA';
+      stampClass = 'stamp-allow';
+    }
+  }
+
   if (overlay) {
-    overlay.innerHTML = `<div class="stamp ${clsMap[action] || 'stamp-wrong'}">${stampMap[action] || 'HẾT GIỜ'}</div>`;
+    overlay.innerHTML = `<div class="stamp ${stampClass}">${stampText}</div>`;
     setTimeout(() => overlay.querySelector('.stamp')?.classList.add('show'), 50);
     Audio.stamp();
   }
@@ -590,12 +658,10 @@ function handleCh3Action(action, caseData) {
     State.ch3Streak++;
     setTrust(3);
     Audio.correct();
-    // TP earnings
     Skills.addTP(5);
-    if (caseData.id === 'c3_5' || caseData.id === 'c3_10') {
+    if (caseData.id === 'c3_5' || caseData.id === 'c3_10' || caseData.id === 'c3_13') {
       setTimeout(() => Skills.addTP(10, 'Case bẫy'), 300);
     }
-    // Phục Hồi Nhanh: heal every 2 consecutive correct
     const recHP = Skills.getRecoveryHP();
     if (recHP > 0 && State.ch3Streak % 2 === 0) {
       const maxHP = Skills.getMaxHP();
@@ -644,7 +710,7 @@ function handleCh3Action(action, caseData) {
     if (popup) {
       popup.classList.add('show', isCorrect ? 'result-correct' : 'result-wrong');
       if (verdict) {
-        verdict.textContent = isCorrect ? 'PHÁN QUYẾT ĐÚNG' : (action === 'timeout' ? 'HẾT GIỜ — SAI' : 'PHÁN QUYẾT SAI');
+        verdict.textContent = isCorrect ? 'PHÁN QUYẾT ĐÚNG' : (isTimeout ? 'HẾT GIỜ — SAI' : 'PHÁN QUYẾT SAI');
         verdict.className   = `result-verdict ${isCorrect ? 'verdict-correct' : 'verdict-wrong'}`;
       }
       if (law)  law.textContent  = caseData.lawRef;
@@ -655,7 +721,6 @@ function handleCh3Action(action, caseData) {
     if (scoreEl)  scoreEl.textContent  = State.ch3Score;
     if (streakEl) streakEl.textContent = State.ch3Streak + 'x';
 
-    // Player died in Ch3 → show revival overlay
     if (playerDefeated) {
       setTimeout(() => handleCh3PlayerDefeated(), 800);
     }
@@ -904,31 +969,77 @@ function renderCh5Case() {
         <div class="ticket-desc">${Skills.applyKeywordHighlight(c.description)}</div>
       </div>
       <div class="ticket-footer">
-        <div class="ticket-actions">
-          <button class="action-btn btn-block"  data-act="block">CHẶN</button>
-          <button class="action-btn btn-report" data-act="report">BÁO CÁO</button>
-          <button class="action-btn btn-allow"  data-act="allow">CHO QUA</button>
-          <div class="timer-wrap" style="position:relative;">
-            <svg class="timer-svg" viewBox="0 0 38 38">
-              <circle class="timer-bg"   cx="19" cy="19" r="18"/>
-              <circle class="timer-ring" id="ch5-timer-ring" cx="19" cy="19" r="18"/>
-            </svg>
-            <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-                         font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text);"
-                  id="ch5-timer-num">${ch5CaseTotal}</span>
+        <div class="ticket-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+          <div style="display: flex; gap: 12px; align-items: center; width: 100%;">
+            <button class="action-btn btn-block"  data-act="block">CHẶN</button>
+            <button class="action-btn btn-report" data-act="report">BÁO CÁO</button>
+            <button class="action-btn btn-allow"  data-act="allow">CHO QUA</button>
+            <div class="timer-wrap" style="position:relative;">
+              <svg class="timer-svg" viewBox="0 0 38 38">
+                <circle class="timer-bg"   cx="19" cy="19" r="18"/>
+                <circle class="timer-ring" id="ch5-timer-ring" cx="19" cy="19" r="18"/>
+              </svg>
+              <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+                           font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--text);"
+                    id="ch5-timer-num">${ch5CaseTotal}</span>
+            </div>
           </div>
+          <button class="btn-confirm" id="ch5-confirm" disabled>XÁC NHẬN PHÁN QUYẾT</button>
         </div>
       </div>
       <div class="stamp-overlay" id="ch5-stamp"></div>
     </div>`;
 
-  document.querySelectorAll('#ch5-ticket .action-btn').forEach(btn => {
+  Skills.applyElimination(c);
+
+  const selectedActions = [];
+  const ticketEl = document.getElementById('ch5-ticket');
+  const btnBlock = ticketEl.querySelector('.btn-block');
+  const btnReport = ticketEl.querySelector('.btn-report');
+  const btnAllow = ticketEl.querySelector('.btn-allow');
+  const btnConfirm = document.getElementById('ch5-confirm');
+
+  function updateConfirmState() {
+    if (btnConfirm) btnConfirm.disabled = (selectedActions.length === 0);
+  }
+
+  [btnBlock, btnReport, btnAllow].forEach(btn => {
+    if (!btn) return;
     btn.addEventListener('click', () => {
       if (State.ch5AwaitingNext) return;
-      handleCh5Action(btn.dataset.act, c);
+      Audio.click();
+      const act = btn.dataset.act;
+      if (act === 'allow') {
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          const idx = selectedActions.indexOf(act);
+          if (idx > -1) selectedActions.splice(idx, 1);
+        } else {
+          btn.classList.add('selected');
+          selectedActions.push(act);
+          if (btnBlock) { btnBlock.classList.remove('selected'); const i = selectedActions.indexOf('block'); if (i > -1) selectedActions.splice(i, 1); }
+          if (btnReport) { btnReport.classList.remove('selected'); const i = selectedActions.indexOf('report'); if (i > -1) selectedActions.splice(i, 1); }
+        }
+      } else {
+        if (btn.classList.contains('selected')) {
+          btn.classList.remove('selected');
+          const idx = selectedActions.indexOf(act);
+          if (idx > -1) selectedActions.splice(idx, 1);
+        } else {
+          btn.classList.add('selected');
+          selectedActions.push(act);
+          if (btnAllow) { btnAllow.classList.remove('selected'); const i = selectedActions.indexOf('allow'); if (i > -1) selectedActions.splice(i, 1); }
+        }
+      }
+      updateConfirmState();
     });
   });
-  Skills.applyElimination(c);
+
+  btnConfirm?.addEventListener('click', () => {
+    if (State.ch5AwaitingNext || selectedActions.length === 0) return;
+    Audio.click();
+    handleCh5Action(selectedActions, c);
+  });
 
   State.ch5CaseInterval = setInterval(() => {
     State.ch5CaseTimer--;
@@ -950,16 +1061,38 @@ function handleCh5Action(action, caseData) {
   clearInterval(State.ch5CaseInterval);
   State.ch5AwaitingNext = true;
   document.querySelectorAll('#ch5-ticket .action-btn').forEach(b => b.disabled = true);
+  const btnConfirm = document.getElementById('ch5-confirm');
+  if (btnConfirm) btnConfirm.disabled = true;
 
-  const correct   = caseData.correct;
-  const isCorrect = action !== 'timeout' && correct.includes(action);
+  const isTimeout = action === 'timeout';
+  const selected = isTimeout ? [] : action;
+  const correct = caseData.correct;
+  
+  const isCorrect = !isTimeout && 
+                    selected.length === correct.length && 
+                    selected.every(val => correct.includes(val));
 
   // ── Stamp ──
   const stamp = document.getElementById('ch5-stamp');
   if (stamp) {
-    const stampMap = { block:'CHẶN', report:'BÁO CÁO', allow:'CHO QUA', timeout:'HẾT GIỜ' };
-    const clsMap   = { block:'stamp-block', report:'stamp-report', allow:'stamp-allow', timeout:'stamp-wrong' };
-    stamp.innerHTML = `<div class="stamp ${clsMap[action] || 'stamp-wrong'}">${stampMap[action] || 'HẾT GIỜ'}</div>`;
+    let stampText = 'HẾT GIỜ';
+    let stampClass = 'stamp-wrong';
+    if (!isTimeout) {
+      if (selected.includes('block') && selected.includes('report')) {
+        stampText = 'CHẶN + BÁO CÁO';
+        stampClass = 'stamp-both';
+      } else if (selected.includes('block')) {
+        stampText = 'CHẶN';
+        stampClass = 'stamp-block';
+      } else if (selected.includes('report')) {
+        stampText = 'BÁO CÁO';
+        stampClass = 'stamp-report';
+      } else if (selected.includes('allow')) {
+        stampText = 'CHO QUA';
+        stampClass = 'stamp-allow';
+      }
+    }
+    stamp.innerHTML = `<div class="stamp ${stampClass}">${stampText}</div>`;
     setTimeout(() => stamp.querySelector('.stamp')?.classList.add('show'), 40);
   }
 
@@ -982,7 +1115,6 @@ function handleCh5Action(action, caseData) {
   if (isCorrect) {
     const res = Combat.onCorrect(caseData);
     bossDefeated = res.bossDefeated;
-    // Phục Hồi Nhanh: heal every 2 correct in a row (tracked via combo)
     const recHP = Skills.getRecoveryHP();
     if (recHP > 0 && Combat.comboCount > 0 && Combat.comboCount % 2 === 0) {
       const maxHP = Skills.getMaxHP();
@@ -1006,7 +1138,7 @@ function handleCh5Action(action, caseData) {
     result.className = `result-popup show ${isCorrect ? 'result-correct' : 'result-wrong'}`;
     result.innerHTML = `
       <div class="result-verdict ${isCorrect ? 'verdict-correct' : 'verdict-wrong'}">
-        ${isCorrect ? 'ĐÚNG' : (action === 'timeout' ? 'HẾT GIỜ' : 'SAI')} — Đáp án: ${caseData.correctLabel}
+        ${isCorrect ? 'ĐÚNG' : (isTimeout ? 'HẾT GIỜ' : 'SAI')} — Đáp án: ${caseData.correctLabel}
       </div>
       <div class="result-text" style="font-size:12px;">${caseData.explanation}</div>`;
   }
@@ -1199,7 +1331,54 @@ function initEnding() {
 }
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
+async function loadAllScreens() {
+  const screens = [
+    { id: 'screen-menu', file: 'screens/menu.html' },
+    { id: 'screen-auth', file: 'screens/auth.html' },
+    { id: 'screen-ch1', file: 'screens/ch1.html' },
+    { id: 'screen-ch2', file: 'screens/ch2.html' },
+    { id: 'screen-ch3', file: 'screens/ch3.html' },
+    { id: 'screen-ch4', file: 'screens/ch4.html' },
+    { id: 'screen-ch5', file: 'screens/ch5.html' },
+    { id: 'screen-lobby', file: 'screens/lobby.html' },
+    { id: 'screen-room-wait', file: 'screens/room_wait.html' },
+    { id: 'screen-mp-results', file: 'screens/mp_results.html' },
+    { id: 'screen-ending', file: 'screens/ending.html' }
+  ];
+
+  const main = document.getElementById('main');
+  if (!main) return;
+
+  if (window.location.protocol === 'file:') {
+    alert("Cảnh báo: Do chính sách bảo mật CORS của trình duyệt, không thể tải các file HTML màn chơi qua giao thức file://. Vui lòng mở game thông qua một web server (ví dụ dùng Docker, Nginx, Live Server trong VS Code, hoặc lệnh: npx serve / python -m http.server).");
+    return;
+  }
+
+  main.innerHTML = '';
+
+  for (const s of screens) {
+    try {
+      const res = await fetch(s.file);
+      if (!res.ok) throw new Error(`HTTP error ${res.status}`);
+      const html = await res.text();
+      const div = document.createElement('div');
+      div.id = s.id;
+      div.className = 'screen';
+      div.innerHTML = html;
+      main.appendChild(div);
+    } catch (e) {
+      console.error(`Failed to load screen ${s.id}:`, e);
+      const errDiv = document.createElement('div');
+      errDiv.style.color = 'var(--danger)';
+      errDiv.style.padding = '20px';
+      errDiv.textContent = `Lỗi tải màn chơi ${s.id}: ${e.message}`;
+      main.appendChild(errDiv);
+    }
+  }
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+  await loadAllScreens();
   Skills.init();
   const firebaseOK = MP.init();
   updateTrustBar();
@@ -1211,6 +1390,25 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-pause')?.addEventListener('click', () => {
     Audio.click();
     Skills.openModal();
+  });
+
+  document.getElementById('btn-mp-quit')?.addEventListener('click', async () => {
+    Audio.click();
+    if (MP.isHost) {
+      if (confirm('Bạn là chủ phòng. Bạn có chắc chắn muốn hủy trận đấu và giải tán phòng không?')) {
+        await MP.leaveRoom();
+        State.mpMode = false;
+        hideMPScoreboard();
+        initMenu();
+      }
+    } else {
+      if (confirm('Bạn có chắc chắn muốn rời khỏi phòng đấu mạng này không?')) {
+        await MP.leaveRoom();
+        State.mpMode = false;
+        hideMPScoreboard();
+        initMenu();
+      }
+    }
   });
 
   if (firebaseOK) {
@@ -1384,6 +1582,8 @@ function _esc(s) {
 
 // ─── Start MP game (Ch3 với MP mode) ─────────────────────────────────────────
 function startMPGame() {
+  MP.cleanupListeners();
+
   State.mpMode = true;
   State.trustScore = 60;
   updateTrustBar();
@@ -1393,9 +1593,27 @@ function startMPGame() {
   showMPScoreboard();
   initChapter3();
 
-  // Keep scoreboard live
   MP.onRoomUpdate(roomData => {
-    if (roomData) renderMPScoreboard(roomData);
+    if (!roomData) {
+      showToast('Phòng chơi đã bị hủy.', 'wrong');
+      State.mpMode = false;
+      hideMPScoreboard();
+      MP.cleanup();
+      initMenu();
+      return;
+    }
+
+    const meta = roomData.meta || {};
+    if (meta.status === 'closed') {
+      showToast('Chủ phòng đã dừng/đóng phòng đấu mạng.', 'wrong');
+      State.mpMode = false;
+      hideMPScoreboard();
+      MP.cleanup();
+      initMenu();
+      return;
+    }
+
+    renderMPScoreboard(roomData);
   });
 }
 
@@ -1406,6 +1624,11 @@ function showMPScoreboard() {
     el.classList.remove('hidden');
     const roomEl = document.getElementById('mp-sb-room');
     if (roomEl) roomEl.textContent = MP.roomCode;
+
+    const btnQuit = document.getElementById('btn-mp-quit');
+    if (btnQuit) {
+      btnQuit.textContent = MP.isHost ? 'HỦY TRẬN / ĐÓNG PHÒNG' : 'RỜI PHÒNG ĐUA';
+    }
   }
 }
 

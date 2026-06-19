@@ -1,4 +1,4 @@
-﻿/* ─── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
+/* ─── DESIGN TOKENS ─────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap');
 
 :root {
@@ -1464,4 +1464,36 @@ button:focus-visible {
 .text-safe   { color: var(--safe); }
 .text-accent { color: var(--accent); }
 .text-mono   { font-family: var(--font-mono); }
+
+/* Multi-choice gameplay enhancements */
+.action-btn.selected.btn-block  { background: var(--danger) !important; color: #fff !important; border-color: var(--danger) !important; box-shadow: 0 0 10px rgba(214,69,80,0.5); }
+.action-btn.selected.btn-report { background: var(--accent) !important; color: #fff !important; border-color: var(--accent) !important; box-shadow: 0 0 10px rgba(232,163,61,0.5); }
+.action-btn.selected.btn-allow  { background: var(--safe) !important; color: #fff !important; border-color: var(--safe) !important; box-shadow: 0 0 10px rgba(63,167,150,0.5); }
+
+.btn-confirm {
+  width: 100%;
+  padding: 10px;
+  background: var(--accent);
+  color: var(--bg-main);
+  border: 1px solid var(--accent);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
+}
+.btn-confirm:hover:not(:disabled) {
+  background: #f0a500;
+  border-color: #f0a500;
+  box-shadow: 0 0 10px rgba(232,163,61,0.3);
+}
+.btn-confirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.stamp-both { color: #f0a500; border-color: #f0a500; text-shadow: 0 0 20px rgba(240,165,0,0.5); }
 

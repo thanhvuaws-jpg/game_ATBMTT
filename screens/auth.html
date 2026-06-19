@@ -1,0 +1,31 @@
+<div class="auth-card">
+  <div class="auth-brand">CYBER SHIELD</div>
+  <div class="auth-sub">Hệ thống xác thực nhân viên SOC</div>
+
+  <div class="auth-tabs">
+    <button class="auth-tab active" id="tab-login">Đăng nhập</button>
+    <button class="auth-tab"        id="tab-register">Đăng ký</button>
+  </div>
+
+  <div id="auth-form" class="auth-form">
+    <div class="auth-field">
+      <label class="auth-label">Email</label>
+      <input id="auth-email" class="mp-input" type="email" placeholder="email@example.com" autocomplete="email"/>
+    </div>
+    <div class="auth-field">
+      <label class="auth-label">Mật khẩu</label>
+      <input id="auth-password" class="mp-input" type="password" placeholder="Tối thiểu 6 ký tự" autocomplete="current-password"/>
+    </div>
+    <div class="auth-field hidden" id="field-charname">
+      <label class="auth-label">Tên nhân vật</label>
+      <input id="auth-charname" class="mp-input" type="text" maxlength="20"
+             placeholder="Tên hiển thị trong game (mặc định: Long)"/>
+    </div>
+    <div id="auth-error" class="mp-error"></div>
+    <button class="btn-primary btn-mp-action" id="btn-auth-submit">Đăng nhập</button>
+  </div>
+
+  <div class="auth-skip">
+    <button class="btn-ghost btn-sm" id="btn-auth-skip">Chơi không cần tài khoản →</button>
+  </div>
+</div>

@@ -1,0 +1,27 @@
+<div class="room-wait-card">
+  <div class="room-code-wrap">
+    <span class="room-code-label">MÃ PHÒNG</span>
+    <span id="room-code-text" class="room-code-big">------</span>
+    <button class="btn-copy" id="btn-copy-code" title="Sao chép mã">
+      <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+        <rect x="4" y="4" width="9" height="9" rx="1.5" stroke="currentColor" stroke-width="1.3"/>
+        <path d="M10 4V2.5A1.5 1.5 0 0 0 8.5 1H2.5A1.5 1.5 0 0 0 1 2.5v6A1.5 1.5 0 0 0 2.5 10H4"
+              stroke="currentColor" stroke-width="1.3"/>
+      </svg>
+    </button>
+  </div>
+  <div class="room-hint">Chia sẻ mã cho bạn bè — họ nhập vào "Tham gia phòng"</div>
+
+  <div class="room-players-title">Người chơi trong phòng</div>
+  <div id="room-players-list" class="room-players-list"></div>
+
+  <div id="room-start-area">
+    <button class="btn-primary btn-mp-action hidden" id="btn-start-mp">
+      Bắt đầu đua (≥ 2 người)
+    </button>
+    <div id="room-wait-msg" class="room-wait-msg">Đang chờ host bắt đầu...</div>
+  </div>
+
+  <div id="mp-room-error" class="mp-error"></div>
+  <button class="btn-ghost" id="btn-leave-room">Rời phòng</button>
+</div>

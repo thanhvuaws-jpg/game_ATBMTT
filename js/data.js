@@ -289,6 +289,45 @@ const GAME_DATA = {
         correctLabel: "CHO QUA",
         lawRef: "Quy trình Responsible Disclosure nội bộ",
         explanation: "Nhân viên báo cáo lỗ hổng bảo mật cho đội an toàn thông tin nội bộ là hành vi hợp pháp và được khuyến khích mạnh mẽ. Đây là 'responsible disclosure' — quy trình chuẩn mực bảo mật. Không được nhầm với hành vi khai thác lỗ hổng."
+      },
+      {
+        id: "c3_11",
+        caseNumber: "CASE-0041",
+        severity: "HIGH",
+        difficulty: "hard",
+        title: "Tổ chức hội nhóm xúc phạm cá nhân trên mạng xã hội",
+        description: "Phát hiện một nhóm kín trên Facebook với 50.000 thành viên liên tục đăng tải hình ảnh cắt ghép, thông tin bịa đặt vu khống, xúc phạm nghiêm trọng danh dự của một nữ sinh, dẫn đến nạn nhân có hành vi tự hại.",
+        source: "Đơn tố cáo từ gia đình nạn nhân",
+        correct: ["block", "report"],
+        correctLabel: "CHẶN + BÁO CÁO",
+        lawRef: "Điều 16 & Điều 18, Luật ANM 2025",
+        explanation: "Hành vi xúc phạm danh dự, nhân phẩm, vu khống cá nhân trên không gian mạng là vi phạm nghiêm trọng Luật An ninh mạng 2025. Cần yêu cầu chặn gỡ nội dung ngay lập tức và báo cáo cơ quan công an để xử lý hình sự."
+      },
+      {
+        id: "c3_12",
+        caseNumber: "CASE-0042",
+        severity: "CRITICAL",
+        difficulty: "medium",
+        title: "Quảng cáo dụ dỗ đầu tư giả mạo cơ quan nhà nước",
+        description: "Hàng loạt website có tên miền dạng chungkhoanviet-vn.com đăng tải banner giả mạo logo của Ủy ban Chứng khoán Nhà nước để dụ dỗ người dân nạp tiền vào app đầu tư lãi suất 30%/tháng, sau đó khóa tài khoản chiếm đoạt tiền.",
+        source: "Hệ thống Cảnh báo An toàn thông tin Quốc gia",
+        correct: ["block", "report"],
+        correctLabel: "CHẶN + BÁO CÁO",
+        lawRef: "Điều 16 & Điều 17, Luật ANM 2025",
+        explanation: "Hành vi lừa đảo chiếm đoạt tài sản qua mạng, giả mạo cơ quan nhà nước là vi phạm nghiêm trọng Luật An ninh mạng 2025. Cần khẩn cấp chặn truy cập tên miền giả mạo và chuyển hồ sơ sang cơ quan công an điều tra."
+      },
+      {
+        id: "c3_13",
+        caseNumber: "CASE-0043",
+        severity: "LOW",
+        difficulty: "hard",
+        title: "Chia sẻ bài viết phản biện khoa học",
+        description: "Một giáo sư đầu ngành chia sẻ bài nghiên cứu khoa học phản biện về hiệu quả của một loại vắc-xin mới được cấp phép, có dẫn chứng dữ liệu lâm sàng từ Tổ chức Y tế Thế giới (WHO). Bài viết thu hút hàng nghìn tranh luận khoa học trái chiều.",
+        source: "Hệ thống lọc tự động của mạng xã hội gắn cờ",
+        correct: ["allow"],
+        correctLabel: "CHO QUA",
+        lawRef: "Quyền tự do học thuật và ngôn luận",
+        explanation: "Bài phản biện học thuật dựa trên dữ liệu khoa học thực tế và nguồn uy tín là hoàn toàn hợp pháp. Không thể coi đây là thông tin sai sự thật hay tin giả gây hoang mang dư luận. Cần cho qua và khuyến khích thảo luận khoa học lành mạnh."
       }
     ]
   },
