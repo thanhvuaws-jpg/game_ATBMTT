@@ -8,3 +8,14 @@ services:
       - "3000:80"
     volumes:
       - .:/usr/share/nginx/html
+    restart: unless-stopped
+
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: cybershield-tunnel
+    command: tunnel --url http://game:80
+    environment:
+      - TUNNEL_TRANSPORT_PROTOCOL=http2
+    restart: unless-stopped
+    depends_on:
+      - game
