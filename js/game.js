@@ -1660,6 +1660,8 @@ function initRoomWait() {
     [chk2, chk3, chk4, chk5].forEach(chk => {
       chk?.addEventListener('change', updateChaptersOnFirebase);
     });
+    // Ghi ngay trạng thái mặc định (tất cả chương được chọn) lên Firebase
+    updateChaptersOnFirebase();
   }
 
   // Host start button
@@ -1727,20 +1729,29 @@ function initRoomWait() {
         : 'Bắt đầu đua (' + count + ' người)';
     }
 
-    // Host closed room
+    // Host closed room — hiện thông báo rõ ràng rồi mới về menu
     if (meta.status === 'closed' && !MP.isHost) {
-      showToast('Host đã đóng phòng.', 'wrong');
       MP.cleanup();
-      initMenu();
+      // Hiện overlay thông báo thay vì toast (toast bị mất khi đổi screen)
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:9999;display:flex;align-items:center;justify-content:center;';
+      overlay.innerHTML = '<div style="background:var(--bg-panel);border:1px solid var(--danger);border-radius:12px;padding:32px 40px;text-align:center;max-width:320px;">' +
+        '<div style="font-size:2rem;margin-bottom:12px;">🚪</div>' +
+        '<div style="font-family:var(--font-mono);color:var(--danger);font-weight:700;font-size:1rem;margin-bottom:8px;">PHÒNG ĐÃ ĐÓNG</div>' +
+        '<div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:20px;">Host đã hủy phòng chơi.</div>' +
+        '<button onclick="this.closest(\'div[style*=fixed]\').remove();initMenu();" style="background:var(--accent);color:#0E1424;border:none;padding:10px 28px;border-radius:6px;font-family:var(--font-mono);font-weight:700;cursor:pointer;">Về menu</button>' +
+      '</div>';
+      document.body.appendChild(overlay);
+      setTimeout(() => { overlay.remove(); initMenu(); }, 4000);
       return;
     }
 
-    // Game started
+    // Game started — dùng setTimeout để thoát callback Firebase trước khi cleanup
     if (meta.status === 'playing') {
-      State.mpCaseOrder = Array.isArray(meta.caseOrder) ? meta.caseOrder : [];
-      State.mpChapters = Array.isArray(meta.chapters) ? meta.chapters : [2, 3, 4, 5];
+      State.mpCaseOrder  = Array.isArray(meta.caseOrder) ? meta.caseOrder : [];
+      State.mpChapters   = Array.isArray(meta.chapters)  ? meta.chapters  : [3];
       State.mpChapterIndex = 0;
-      startMPGame();
+      setTimeout(() => startMPGame(), 0);
     }
   });
 }
