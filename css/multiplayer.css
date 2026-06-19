@@ -1,0 +1,464 @@
+﻿/* ═══════════════════════════════════════════════════════════════════════════════
+   MULTIPLAYER UI
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+/* ─── Menu MP button ─────────────────────────────────────────────────────────── */
+.btn-mp {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: transparent;
+  color: var(--safe);
+  border: 1px solid rgba(63,167,150,0.40);
+  padding: 10px 24px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+  width: 100%;
+}
+.btn-mp:hover:not(:disabled) {
+  background: rgba(63,167,150,0.10);
+  border-color: var(--safe);
+}
+.btn-mp:disabled { cursor: not-allowed; }
+
+/* ─── Shared MP input / ghost button ────────────────────────────────────────── */
+.mp-input {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  padding: 8px 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  width: 100%;
+}
+.mp-input:focus { border-color: var(--accent); }
+
+.mp-code {
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 16px;
+  text-align: center;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  padding: 8px 18px;
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-ghost:hover { color: var(--text); border-color: var(--text-muted); }
+
+.btn-mp-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.mp-error {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--danger);
+  min-height: 18px;
+  text-align: center;
+}
+
+/* ─── Lobby screen ──────────────────────────────────────────────────────────── */
+.lobby-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  max-width: 400px;
+  padding: 32px 28px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.lobby-title {
+  font-family: var(--font-mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-align: center;
+}
+
+.lobby-sub {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.lobby-name-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+}
+
+.lobby-name-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.06em;
+}
+
+.lobby-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.lobby-divider::before,
+.lobby-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.lobby-join-row {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+}
+.lobby-join-row .mp-code { flex: 1; }
+.lobby-join-row button   { flex-shrink: 0; white-space: nowrap; }
+
+/* ─── Waiting room ──────────────────────────────────────────────────────────── */
+.room-wait-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  max-width: 480px;
+  padding: 32px 28px;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.room-code-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(232,163,61,0.08);
+  border: 1px solid rgba(232,163,61,0.30);
+  border-radius: var(--radius);
+  padding: 12px 20px;
+  width: 100%;
+  justify-content: center;
+}
+
+.room-code-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+
+.room-code-big {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.22em;
+}
+
+.btn-copy {
+  background: none;
+  color: var(--text-muted);
+  padding: 4px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 0.2s;
+  border: none;
+}
+.btn-copy:hover { color: var(--accent); }
+
+.room-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.6;
+}
+
+.room-players-title {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  width: 100%;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+}
+
+.room-players-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  min-height: 48px;
+}
+
+.room-player-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg-card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.rp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--safe);
+  flex-shrink: 0;
+  box-shadow: 0 0 6px var(--safe);
+}
+
+.rp-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  flex: 1;
+}
+
+.rp-host {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+  background: rgba(232,163,61,0.12);
+  border: 1px solid rgba(232,163,61,0.30);
+  padding: 2px 7px;
+  border-radius: 3px;
+  letter-spacing: 0.06em;
+}
+
+#room-start-area {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.room-wait-msg {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* ─── MP Scoreboard (floating, during game) ─────────────────────────────────── */
+.mp-scoreboard {
+  position: fixed;
+  top: 58px;
+  right: 0;
+  width: 200px;
+  background: rgba(27,36,56,0.96);
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  border-bottom-left-radius: var(--radius);
+  z-index: 500;
+  backdrop-filter: blur(4px);
+  font-size: 12px;
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.mp-sb-header {
+  padding: 8px 12px 6px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.mp-sb-title {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+}
+
+.mp-sb-room {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--accent);
+  letter-spacing: 0.1em;
+}
+
+.mp-sb-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.mp-sb-me { background: rgba(232,163,61,0.06); }
+
+.mp-sb-rank {
+  font-size: 13px;
+  width: 22px;
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.mp-sb-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.mp-sb-name {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mp-sb-sub {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+}
+
+.mp-sb-score {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+/* ─── MP Results screen ─────────────────────────────────────────────────────── */
+.mp-results-card {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow);
+}
+
+.mp-results-title {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.mp-results-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mp-result-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color 0.2s;
+}
+
+.mp-result-me {
+  border-color: rgba(232,163,61,0.40);
+  background: rgba(232,163,61,0.05);
+}
+
+.mp-result-rank { font-size: 22px; flex-shrink: 0; }
+
+.mp-result-info { flex: 1; }
+
+.mp-result-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.mp-result-grade {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  margin-top: 2px;
+  letter-spacing: 0.06em;
+}
+
+.mp-result-score { text-align: right; flex-shrink: 0; }
+
+.mp-rs-num {
+  font-family: var(--font-mono);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1;
+}
+
+.mp-rs-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+/* Scoreboard large-room extras */
+.mp-sb-sep {
+  text-align: center;
+  font-size: 10px;
+  color: var(--border);
+  padding: 3px 0;
+  letter-spacing: 0.2em;
+  border-bottom: 1px solid var(--border);
+}
+
+.mp-sb-footer {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-muted);
+  padding: 5px 0 4px;
+  letter-spacing: 0.08em;
+}
+

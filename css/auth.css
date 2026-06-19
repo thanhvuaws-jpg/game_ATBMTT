@@ -1,0 +1,194 @@
+﻿/* ═══════════════════════════════════════════════════════════════════════════════
+   AUTH SCREEN
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.auth-card {
+  max-width: 420px;
+  margin: auto;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 36px 32px 28px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+}
+.auth-brand {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 3px;
+  margin-bottom: 4px;
+}
+.auth-sub {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+}
+.auth-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.auth-tab {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.auth-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent)15;
+}
+.auth-field { margin-bottom: 14px; }
+.auth-label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 6px;
+}
+.auth-form .mp-input {
+  width: 100%;
+  box-sizing: border-box;
+}
+.mp-error {
+  color: var(--danger);
+  font-size: 0.78rem;
+  min-height: 18px;
+  margin-bottom: 10px;
+}
+.btn-mp-action {
+  width: 100%;
+  padding: 12px;
+  font-size: 0.9rem;
+  letter-spacing: 1.5px;
+}
+.auth-skip {
+  margin-top: 16px;
+  text-align: center;
+}
+.btn-sm {
+  font-size: 0.75rem;
+  padding: 5px 12px;
+}
+#screen-auth.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 20px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   MENU USER BAR
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.menu-user-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  margin-bottom: 14px;
+}
+.menu-user-name {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+}
+.hidden { display: none !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   LEADERBOARD PANEL
+   ═══════════════════════════════════════════════════════════════════════════════ */
+.leaderboard-panel {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 18px;
+  overflow: hidden;
+}
+.lb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.lb-title {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.lb-tabs {
+  display: flex;
+  gap: 6px;
+}
+.lb-tab {
+  padding: 4px 12px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.lb-tab.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent)18;
+}
+.lb-list {
+  padding: 8px 0;
+  max-height: 200px;
+  overflow-y: auto;
+}
+.lb-row {
+  display: flex;
+  align-items: center;
+  padding: 7px 16px;
+  gap: 12px;
+  transition: background 0.15s;
+  font-size: 0.83rem;
+}
+.lb-row:hover { background: var(--bg-card); }
+.lb-row.lb-me {
+  background: var(--accent)10;
+  border-left: 2px solid var(--accent);
+}
+.lb-rank {
+  width: 28px;
+  text-align: center;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.lb-name {
+  flex: 1;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lb-score {
+  font-weight: 700;
+  font-size: 0.88rem;
+  flex-shrink: 0;
+}
+.lb-loading, .lb-empty {
+  padding: 18px 16px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  text-align: center;
+}
