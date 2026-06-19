@@ -1627,6 +1627,41 @@ function initRoomWait() {
     initMenu();
   });
 
+  // Show host options panel
+  const hostPanel = document.getElementById('host-options-panel');
+  if (hostPanel && MP.isHost) {
+    hostPanel.classList.remove('hidden');
+  }
+
+  // Host checkbox listeners
+  if (MP.isHost) {
+    const chk2 = document.getElementById('chk-ch2');
+    const chk3 = document.getElementById('chk-ch3');
+    const chk4 = document.getElementById('chk-ch4');
+    const chk5 = document.getElementById('chk-ch5');
+
+    const updateChaptersOnFirebase = () => {
+      const selected = [];
+      if (chk2?.checked) selected.push(2);
+      if (chk3?.checked) selected.push(3);
+      if (chk4?.checked) selected.push(4);
+      if (chk5?.checked) selected.push(5);
+
+      if (selected.length === 0) {
+        if (errEl) errEl.textContent = 'Bạn phải chọn ít nhất một chương để bắt đầu.';
+        if (startBtn) startBtn.disabled = true;
+        return;
+      } else {
+        if (errEl) errEl.textContent = '';
+      }
+      MP.db.ref('rooms/' + MP.roomCode + '/meta/chapters').set(selected);
+    };
+
+    [chk2, chk3, chk4, chk5].forEach(chk => {
+      chk?.addEventListener('change', updateChaptersOnFirebase);
+    });
+  }
+
   // Host start button
   if (startBtn) {
     if (MP.isHost) {
@@ -1643,6 +1678,15 @@ function initRoomWait() {
         if (errEl) errEl.textContent = 'Cần ít nhất 2 người để bắt đầu.';
         return;
       }
+
+      // Kiểm tra xem có chương nào được chọn không
+      const metaSnap = await MP.db.ref('rooms/' + MP.roomCode + '/meta/chapters').once('value');
+      const chs = metaSnap.val();
+      if (!Array.isArray(chs) || chs.length === 0) {
+        if (errEl) errEl.textContent = 'Bạn phải chọn ít nhất một chương để bắt đầu.';
+        return;
+      }
+
       Audio.click();
       await MP.startGame();
     });
@@ -1668,9 +1712,16 @@ function initRoomWait() {
       ).join('');
     }
 
+    // Update selected chapters label
+    const label = document.getElementById('mp-selected-chapters-label');
+    if (label && Array.isArray(meta.chapters)) {
+      label.textContent = meta.chapters.map(ch => 'Chương ' + ch).join(', ');
+    }
+
     // Enable/disable start button
     if (startBtn && MP.isHost) {
-      startBtn.disabled = count < 2;
+      const hasChapters = Array.isArray(meta.chapters) && meta.chapters.length > 0;
+      startBtn.disabled = count < 2 || !hasChapters;
       startBtn.textContent = count < 2
         ? 'Bắt đầu đua (cần thêm ' + (2 - count) + ' người)'
         : 'Bắt đầu đua (' + count + ' người)';
@@ -1687,6 +1738,8 @@ function initRoomWait() {
     // Game started
     if (meta.status === 'playing') {
       State.mpCaseOrder = Array.isArray(meta.caseOrder) ? meta.caseOrder : [];
+      State.mpChapters = Array.isArray(meta.chapters) ? meta.chapters : [2, 3, 4, 5];
+      State.mpChapterIndex = 0;
       startMPGame();
     }
   });
