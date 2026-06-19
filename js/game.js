@@ -1835,7 +1835,9 @@ function nextMPChapter() {
     const nextCh = State.mpChapters[State.mpChapterIndex];
     gotoMPChapter(nextCh);
   } else {
-    MP.finishMyGame(getMPTotalScore(), State.trustScore);
+    const finalRaceScore = getMPTotalScore();
+    MP.finishMyGame(finalRaceScore, State.trustScore);
+    Auth.saveScore('race', finalRaceScore); // lưu ngay tại đây, trước khi đổi màn hình
     hideMPScoreboard();
     gotoChapter('mpres');
   }
@@ -1927,8 +1929,6 @@ function initMPResults() {
   showScreen('screen-mp-results');
   setCaseLabel('#KẾT QUẢ');
   hideMPScoreboard();
-  Auth.saveScore('race', getMPTotalScore()); // lưu điểm đua lên leaderboard
-
   const container = document.getElementById('mp-results-container');
   if (!container) return;
 
