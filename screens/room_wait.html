@@ -15,6 +15,30 @@
   <div class="room-players-title">Người chơi trong phòng</div>
   <div id="room-players-list" class="room-players-list"></div>
 
+  <!-- Host Options Panel -->
+  <div id="host-options-panel" class="host-options-panel hidden" style="margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; text-align: left; width: 100%;">
+    <div style="font-family: var(--font-mono); font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 8px; letter-spacing: 0.05em;">CHỌN MÀN CHƠI ĐẤU MẠNG (CHỈ HOST)</div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text);">
+        <input type="checkbox" id="chk-ch2" checked style="accent-color: var(--accent);"> Chương 2: Phân loại Tấn công & Tội phạm
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text);">
+        <input type="checkbox" id="chk-ch3" checked style="accent-color: var(--accent);"> Chương 3: Phán quyết Luật ANM 2025
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text);">
+        <input type="checkbox" id="chk-ch4" checked style="accent-color: var(--accent);"> Chương 4: Điều phối đội phản ứng SOC
+      </label>
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text);">
+        <input type="checkbox" id="chk-ch5" checked style="accent-color: var(--accent);"> Chương 5: Quyết đấu Boss GHOST_VN
+      </label>
+    </div>
+  </div>
+
+  <!-- Player Selected Chapters Display -->
+  <div id="player-chapters-display" class="player-chapters-display" style="margin-top: 12px; margin-bottom: 12px; font-size: 12px; color: var(--text-muted); text-align: left; width: 100%; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8px;">
+    Danh sách màn thi đấu: <span id="mp-selected-chapters-label" style="color: var(--accent); font-weight: bold;">Chương 2, 3, 4, 5</span>
+  </div>
+
   <div id="room-start-area">
     <button class="btn-primary btn-mp-action hidden" id="btn-start-mp">
       Bắt đầu đua (≥ 2 người)

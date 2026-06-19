@@ -57,7 +57,8 @@ const MP = {
         hostId:    this.playerId,
         status:    'waiting',
         startedAt: 0,
-        caseOrder
+        caseOrder,
+        chapters:  [2, 3, 4, 5]
       }
     });
 

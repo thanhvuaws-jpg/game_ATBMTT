@@ -133,6 +133,7 @@ function initMenu() {
   Combat.hide();
   hideMPScoreboard();
   State.mpMode = false;
+  State.currentChapter = 0;
   showScreen('screen-menu');
   setCaseLabel('---');
 
@@ -247,6 +248,17 @@ function initChapter1() {
   setCaseLabel('#INTRO');
   State.ch1DialogueIndex = 0;
   State.ch1QuizIndex = 0;
+
+  const charName = Auth.getCharacterName();
+  const avatarLongName = document.querySelector('#avatar-long .avatar-name');
+  if (avatarLongName) {
+    avatarLongName.innerHTML = `${charName}<br><span style="font-size:10px;">Chuyên viên mới</span>`;
+  }
+  const avatarLongIcon = document.querySelector('#avatar-long .avatar-icon');
+  if (avatarLongIcon) {
+    avatarLongIcon.textContent = charName.charAt(0).toUpperCase();
+  }
+
   document.getElementById('ch1-dialogue').classList.remove('hidden');
   document.getElementById('ch1-quiz').classList.add('hidden');
   renderDialogue();
@@ -329,6 +341,15 @@ function initChapter2() {
   setCaseLabel('#CH2');
   State.ch2Score = 0;
   State.ch2DragId = null;
+  if (State.mpMode) {
+    MP.updateMyState({
+      currentChapter: 2,
+      score: getMPTotalScore(),
+      trustScore: State.trustScore,
+      caseIndex: 0,
+      hp: 100
+    });
+  }
   renderCh2Board();
 }
 
@@ -411,8 +432,23 @@ function setupDragDrop() {
       document.getElementById('ch2-score-display').textContent = State.ch2Score;
       setTrust(correct ? 2 : -1);
 
-      if (document.querySelectorAll('[data-placed]').length === GAME_DATA.chapter2.cards.length) {
-        setTimeout(() => finishChapter2(), 800);
+      const placedCount = document.querySelectorAll('[data-placed]').length;
+      if (State.mpMode) {
+        MP.updateMyState({
+          currentChapter: 2,
+          score: getMPTotalScore(),
+          trustScore: State.trustScore,
+          caseIndex: placedCount,
+          hp: 100
+        });
+      }
+
+      if (placedCount === GAME_DATA.chapter2.cards.length) {
+        if (State.mpMode) {
+          setTimeout(() => nextMPChapter(), 1500);
+        } else {
+          setTimeout(() => finishChapter2(), 800);
+        }
       }
       State.ch2DragId = null;
     });
@@ -679,7 +715,8 @@ function handleCh3Action(action, caseData) {
   // ── Sync MP state ──
   if (State.mpMode) {
     MP.updateMyState({
-      score:      State.ch3Score,
+      currentChapter: 3,
+      score:      getMPTotalScore(),
       trustScore: State.trustScore,
       caseIndex:  State.ch3CaseIndex,
       streak:     State.ch3Streak,
@@ -729,6 +766,7 @@ function handleCh3Action(action, caseData) {
 
 // Ch3: player HP = 0 → tạm ngừng, hồi 50 HP, làm lại case
 function handleCh3PlayerDefeated() {
+  const charName = Auth.getCharacterName();
   // Trong MP mode: hồi luôn không hiện overlay (tránh block timer)
   if (State.mpMode) {
     Combat.playerHP = 50;
@@ -742,7 +780,7 @@ function handleCh3PlayerDefeated() {
   overlay.style.background = 'rgba(14,20,36,0.97)';
   overlay.innerHTML = `
     <div class="chapter-complete-title" style="color:var(--danger);">Hệ thống quá tải!</div>
-    <div class="chapter-complete-sub">Long cần xem lại case này.<br>Hệ thống tự phục hồi — tiếp tục từ case vừa sai.</div>
+    <div class="chapter-complete-sub">${charName} cần xem lại case này.<br>Hệ thống tự phục hồi — tiếp tục từ case vừa sai.</div>
     <button class="btn-primary" style="margin-top:12px;min-width:220px;">Làm lại case này</button>
   `;
   overlay.querySelector('button').addEventListener('click', () => {
@@ -757,9 +795,7 @@ function handleCh3PlayerDefeated() {
 function finishChapter3() {
   Combat.hide();
   if (State.mpMode) {
-    MP.finishMyGame(State.ch3Score, State.trustScore);
-    hideMPScoreboard();
-    gotoChapter('mpres');
+    nextMPChapter();
     return;
   }
   showChapterComplete(
@@ -776,6 +812,15 @@ function initChapter4() {
   setCaseLabel('#ROUND-1');
   State.ch4Round = 0;
   State.ch4Score = 0;
+  if (State.mpMode) {
+    MP.updateMyState({
+      currentChapter: 4,
+      score: getMPTotalScore(),
+      trustScore: State.trustScore,
+      caseIndex: State.ch4Round,
+      hp: 100
+    });
+  }
   renderCh4Round();
 }
 
@@ -826,6 +871,15 @@ function renderCh4Round() {
   document.getElementById('ch4-next')?.addEventListener('click', () => {
     Audio.click();
     State.ch4Round++;
+    if (State.mpMode) {
+      MP.updateMyState({
+        currentChapter: 4,
+        score: getMPTotalScore(),
+        trustScore: State.trustScore,
+        caseIndex: State.ch4Round,
+        hp: 100
+      });
+    }
     renderCh4Round();
   });
 }
@@ -846,6 +900,16 @@ function handleCh4Choice(incId, choice, round) {
   setTrust(option.score > 0 ? 3 : -5);
   if (correct) Audio.correct(); else Audio.wrong();
 
+  if (State.mpMode) {
+    MP.updateMyState({
+      currentChapter: 4,
+      score: getMPTotalScore(),
+      trustScore: State.trustScore,
+      caseIndex: State.ch4Round,
+      hp: 100
+    });
+  }
+
   State.ch4RoundAnswered++;
   if (State.ch4RoundAnswered >= round.incidents.length) {
     document.getElementById('ch4-next')?.classList.add('show');
@@ -853,6 +917,10 @@ function handleCh4Choice(incId, choice, round) {
 }
 
 function finishChapter4() {
+  if (State.mpMode) {
+    nextMPChapter();
+    return;
+  }
   showChapterComplete('Chương 4 Hoàn Thành', 'GHOST_VN đang lộ diện. Chuẩn bị cho đợt tấn công cuối!', () => gotoChapter(5));
 }
 
@@ -879,6 +947,16 @@ function initChapter5() {
 
   // Combat: player + boss HP, boss bắt đầu với khiên
   Combat.init(true);
+
+  if (State.mpMode) {
+    MP.updateMyState({
+      currentChapter: 5,
+      score: getMPTotalScore(),
+      trustScore: State.trustScore,
+      caseIndex: State.ch5PoolIndex,
+      hp: Combat.playerHP
+    });
+  }
 
   renderCh5UI();
   startCh5Timer();
@@ -1146,12 +1224,26 @@ function handleCh5Action(action, caseData) {
   State.ch5PoolIndex++;
   if (bDone) bDone.textContent = State.ch5PoolIndex;
 
+  if (State.mpMode) {
+    MP.updateMyState({
+      currentChapter: 5,
+      score: getMPTotalScore(),
+      trustScore: State.trustScore,
+      caseIndex: State.ch5PoolIndex,
+      hp: Combat.playerHP
+    });
+  }
+
   // ── Boss defeated? ──
   if (bossDefeated) {
     State.ch5BossDefeated = true;
     clearInterval(State.ch5TimerInterval);
     clearInterval(State.ch5CaseInterval);
-    setTimeout(() => showBossDefeatedCutscene(), 1200);
+    if (State.mpMode) {
+      setTimeout(() => finishChapter5(), 1200);
+    } else {
+      setTimeout(() => showBossDefeatedCutscene(), 1200);
+    }
     return;
   }
 
@@ -1171,15 +1263,17 @@ function handleCh5Action(action, caseData) {
 
 // Ch5: player HP = 0 → hồi 40, trừ -10 trust, chơi tiếp
 function handleCh5PlayerDefeated() {
+  const charName = Auth.getCharacterName();
   setTrust(-10);
   Combat.playerHP = 40;
   Combat.updatePlayerBar();
-  showToast('Hệ thống bị xâm nhập! Long hồi phục với 40 HP. −10 Tín nhiệm.', 'wrong');
+  showToast(`Hệ thống bị xâm nhập! ${charName} hồi phục với 40 HP. −10 Tín nhiệm.`, 'wrong');
 }
 
 // Ch5: boss HP = 0 → cutscene ngắn visual novel → ending
 function showBossDefeatedCutscene() {
   Combat.hide();
+  const charName = Auth.getCharacterName();
   const dialogues = [
     {
       speaker: 'SYS',
@@ -1189,10 +1283,10 @@ function showBossDefeatedCutscene() {
     {
       speaker: 'Chị Mai',
       color: '#E8A33D',
-      text: 'Long! Em đã làm được rồi. Toàn bộ cuộc tấn công bị chặn đứng. IP của GHOST_VN đã được truy vết và chuyển cơ quan điều tra.'
+      text: `${charName}! Em đã làm được rồi. Toàn bộ cuộc tấn công bị chặn đứng. IP của GHOST_VN đã được truy vết và chuyển cơ quan điều tra.`
     },
     {
-      speaker: 'Long',
+      speaker: charName,
       color: '#3FA796',
       text: 'Hệ thống đã an toàn. Đang gửi báo cáo đầy đủ đến Cục An toàn thông tin và Bộ Công an — đúng quy trình Luật ANM 2025.'
     },
@@ -1244,7 +1338,11 @@ function finishChapter5() {
   Skills.addTP(20, 'Hoàn thành chương');
   clearSave();
   saveHistory();
-  gotoChapter(6);
+  if (State.mpMode) {
+    nextMPChapter();
+  } else {
+    gotoChapter(6);
+  }
 }
 
 // ─── ENDING ───────────────────────────────────────────────────────────────────
@@ -1260,6 +1358,10 @@ function initEnding() {
   else if (score >= 50) endKey = 'good';
 
   const e = GAME_DATA.endings[endKey];
+  const charName = Auth.getCharacterName();
+  const summaryText = e.summary.replace(/\bLong\b/g, charName);
+  const ghostText = e.ghost.replace(/\bLong\b/g, charName);
+  const detailText = e.detail.replace(/\bLong\b/g, charName);
   const container = document.getElementById('ending-container');
 
   container.innerHTML = `
@@ -1270,7 +1372,7 @@ function initEnding() {
         </div>
         <div>
           <div class="ending-title">${e.title}</div>
-          <div class="ending-summary">${e.summary}</div>
+          <div class="ending-summary">${summaryText}</div>
         </div>
       </div>
       <div class="ending-body">
@@ -1281,8 +1383,8 @@ function initEnding() {
             <div class="ending-score-label">/ 100 điểm</div>
           </div>
         </div>
-        <div class="ending-ghost"><strong>GHOST_VN:</strong> ${e.ghost}</div>
-        <div class="ending-detail">${e.detail}</div>
+        <div class="ending-ghost"><strong>GHOST_VN:</strong> ${ghostText}</div>
+        <div class="ending-detail">${detailText}</div>
         <div style="font-family:var(--font-serif);font-size:12px;color:var(--text-muted);font-style:italic;
                     text-align:center;padding-top:8px;border-top:1px solid var(--border);">
           Nội dung mô phỏng dựa trên Luật An ninh mạng 2025 (Luật số 116/2025/QH15) — chỉ phục vụ mục đích học tập.
@@ -1301,7 +1403,7 @@ function initEnding() {
     dlg.style.cssText = 'background:rgba(14,20,36,0.99);';
     dlg.innerHTML = `
       <div class="chapter-complete-title" style="font-size:19px;">Bắt đầu lại?</div>
-      <div class="chapter-complete-sub" style="margin-bottom:16px;">Chọn cách reset tiến trình của Long:</div>
+      <div class="chapter-complete-sub" style="margin-bottom:16px;">Chọn cách reset tiến trình của ${charName}:</div>
       <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px;">
         <button class="btn-primary"   id="dlg-keep">Giữ lại kỹ năng đã nâng cấp</button>
         <button class="btn-secondary" id="dlg-reset">Reset toàn bộ (bao gồm kỹ năng)</button>
@@ -1424,6 +1526,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   } else {
     initMenu();
   }
+
+  // Cảnh báo khi reload hoặc đóng trang khi đang chơi để tránh mất tiến trình
+  window.addEventListener('beforeunload', (e) => {
+    const isPlaying = (typeof State.currentChapter === 'number' && State.currentChapter >= 1 && State.currentChapter <= 5);
+    if (isPlaying || State.mpMode) {
+      e.preventDefault();
+      e.returnValue = 'Bạn đang trong trận đấu hoặc nhiệm vụ. Nếu tải lại trang, tiến trình chơi hiện tại có thể bị mất. Bạn có chắc chắn muốn rời đi?';
+      return e.returnValue;
+    }
+  });
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -1453,6 +1565,8 @@ function initLobby() {
     Audio.click(); clearErr();
     const name = nameInput?.value.trim() || 'Long';
     MP.setPlayerName(name);
+    const hn = document.getElementById('header-charname');
+    if (hn) hn.textContent = name;
     try {
       const code = await MP.createRoom();
       gotoChapter('rwait');
@@ -1470,6 +1584,8 @@ function initLobby() {
       return;
     }
     MP.setPlayerName(name);
+    const hn = document.getElementById('header-charname');
+    if (hn) hn.textContent = name;
     try {
       await MP.joinRoom(code);
       gotoChapter('rwait');
@@ -1580,18 +1696,29 @@ function _esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// ─── Start MP game (Ch3 với MP mode) ─────────────────────────────────────────
+// ─── Start MP game (Đấu mạng nhiều chương) ─────────────────────────────────────────
 function startMPGame() {
   MP.cleanupListeners();
 
   State.mpMode = true;
   State.trustScore = 60;
   updateTrustBar();
+
+  // Reset các biến điểm của từng chương
+  State.ch2Score = 0;
   State.ch3CaseIndex = 0;
   State.ch3Score     = 0;
   State.ch3Streak    = 0;
+  State.ch4Round = 0;
+  State.ch4Score = 0;
+  State.ch5Score      = 0;
+  State.ch5PoolIndex  = 0;
+
   showMPScoreboard();
-  initChapter3();
+
+  // Bắt đầu với chương đầu tiên được chọn
+  const firstCh = State.mpChapters[State.mpChapterIndex];
+  gotoMPChapter(firstCh);
 
   MP.onRoomUpdate(roomData => {
     if (!roomData) {
@@ -1615,6 +1742,39 @@ function startMPGame() {
 
     renderMPScoreboard(roomData);
   });
+}
+
+function gotoMPChapter(ch) {
+  if (ch === 2) {
+    initChapter2();
+  } else if (ch === 3) {
+    initChapter3();
+  } else if (ch === 4) {
+    initChapter4();
+  } else if (ch === 5) {
+    initChapter5();
+  }
+}
+
+function getMPTotalScore() {
+  let total = 0;
+  if (State.mpChapters.includes(2)) total += State.ch2Score;
+  if (State.mpChapters.includes(3)) total += State.ch3Score;
+  if (State.mpChapters.includes(4)) total += State.ch4Score;
+  if (State.mpChapters.includes(5)) total += State.ch5Score;
+  return total;
+}
+
+function nextMPChapter() {
+  State.mpChapterIndex++;
+  if (State.mpChapterIndex < State.mpChapters.length) {
+    const nextCh = State.mpChapters[State.mpChapterIndex];
+    gotoMPChapter(nextCh);
+  } else {
+    MP.finishMyGame(getMPTotalScore(), State.trustScore);
+    hideMPScoreboard();
+    gotoChapter('mpres');
+  }
 }
 
 // ─── MP Scoreboard ────────────────────────────────────────────────────────────
@@ -1651,13 +1811,32 @@ function renderMPScoreboard(roomData) {
     const isMe     = p.id === MP.playerId;
     const finished = p.status === 'finished';
     const rank     = ['🥇','🥈','🥉'][i] || (i + 1) + '.';
+
+    let subText = '';
+    if (finished) {
+      subText = '✓ Xong';
+    } else {
+      const ch = p.currentChapter || 3;
+      const idx = (p.caseIndex || 0) + (ch === 2 ? 0 : 1);
+      const streak = p.streak || 0;
+      if (ch === 2) {
+        subText = `Ch2 · Mục ${idx}`;
+      } else if (ch === 3) {
+        subText = `Ch3 · Mục ${idx} · ×${streak}`;
+      } else if (ch === 4) {
+        subText = `Ch4 · Mục ${idx}`;
+      } else if (ch === 5) {
+        subText = `Ch5 · Mục ${idx}`;
+      } else {
+        subText = `Case ${idx}`;
+      }
+    }
+
     return '<div class="mp-sb-row' + (isMe ? ' mp-sb-me' : '') + '">' +
       '<span class="mp-sb-rank">' + rank + '</span>' +
       '<div class="mp-sb-info">' +
         '<span class="mp-sb-name">' + _esc(p.name) + (isMe ? ' ◀' : '') + '</span>' +
-        '<span class="mp-sb-sub">' +
-          (finished ? '✓ Xong' : 'Case ' + (p.caseIndex + 1) + ' · ×' + (p.streak || 0)) +
-        '</span>' +
+        '<span class="mp-sb-sub">' + subText + '</span>' +
       '</div>' +
       '<span class="mp-sb-score">' + (p.score || 0) + '</span>' +
     '</div>';
@@ -1684,7 +1863,7 @@ function initMPResults() {
   showScreen('screen-mp-results');
   setCaseLabel('#KẾT QUẢ');
   hideMPScoreboard();
-  Auth.saveScore('race', State.ch3Score); // lưu điểm đua lên leaderboard
+  Auth.saveScore('race', getMPTotalScore()); // lưu điểm đua lên leaderboard
 
   const container = document.getElementById('mp-results-container');
   if (!container) return;
@@ -1745,6 +1924,7 @@ function initMPResults() {
 
 function initAuthScreen() {
   Combat.hide();
+  State.currentChapter = 0;
   showScreen('screen-auth');
   setCaseLabel('#AUTH');
 
@@ -1816,6 +1996,12 @@ function initAuthScreen() {
   // Skip (chơi không cần tài khoản)
   document.getElementById('btn-auth-skip')?.addEventListener('click', () => {
     Audio.click();
+    const guestName = prompt('Hãy nhập tên nhân vật của bạn (mặc định: Long):', 'Long');
+    const finalName = guestName?.trim().slice(0, 20) || 'Long';
+    localStorage.setItem('csPlayerName', finalName);
+    if (typeof MP !== 'undefined') {
+      MP.setPlayerName(finalName);
+    }
     initMenu();
   });
 }

@@ -78,7 +78,10 @@ const Auth = {
   },
 
   getCharacterName() {
-    return this.profile?.displayName || 'Long';
+    if (this.profile && this.profile.displayName) {
+      return this.profile.displayName;
+    }
+    return localStorage.getItem('csPlayerName') || 'Long';
   },
 
   isLoggedIn() { return !!this.user; },
