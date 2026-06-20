@@ -1,69 +1,30 @@
-// bgm.js — Trình quản lý nhạc nền sử dụng YouTube IFrame API để stream nhạc của người dùng
+// bgm.js — Trình quản lý nhạc nền sử dụng HTML5 Audio API (chạy local tránh lỗi CORS/Iframe)
 const BGM = (() => {
-  let player = null;
+  let audio = null;
   let muted = false;
-  let volume = 40; // Âm lượng mặc định 40%
+  let volume = 0.4; // Âm lượng mặc định 40% (HTML5 Audio dùng từ 0.0 đến 1.0)
 
-  // Khởi tạo và chèn API YouTube
   function init() {
-    // 1. Chèn container ẩn cho YouTube Player
-    const playerContainer = document.createElement('div');
-    playerContainer.id = 'bgm-player-container';
-    playerContainer.style.position = 'absolute';
-    playerContainer.style.width = '0';
-    playerContainer.style.height = '0';
-    playerContainer.style.left = '-9999px';
-    playerContainer.style.top = '-9999px';
-    playerContainer.innerHTML = '<div id="bgm-player"></div>';
-    document.body.appendChild(playerContainer);
+    // 1. Tạo đối tượng Audio HTML5
+    audio = new Audio('assets/bgm.mp3');
+    audio.loop = true;
+    audio.volume = volume;
 
-    // 2. Tải API YouTube
-    const tag = document.createElement('script');
-    tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    // 2. Thiết lập tự động phát sau tương tác đầu tiên của người dùng
+    setupAutoPlay();
 
-    // Đăng ký callback toàn cục cho YouTube API
-    window.onYouTubeIframeAPIReady = () => {
-      player = new YT.Player('bgm-player', {
-        height: '0',
-        width: '0',
-        videoId: '1vviWhYvmXo',
-        playerVars: {
-          'autoplay': 1,
-          'loop': 1,
-          'playlist': '1vviWhYvmXo',
-          'controls': 0,
-          'showinfo': 0,
-          'rel': 0,
-          'enablejsapi': 1,
-          'origin': window.location.origin
-        },
-        events: {
-          'onReady': (event) => {
-            event.target.setVolume(volume);
-            setupAutoPlay();
-          },
-          'onStateChange': (event) => {
-            // Đảm bảo bài hát tự động lặp lại
-            if (event.data === YT.PlayerState.ENDED) {
-              player.playVideo();
-            }
-          }
-        }
-      });
-    };
-
-    // 3. Đăng ký sự kiện điều khiển UI
+    // 3. Thiết lập điều khiển UI
     setupUIControls();
   }
 
   function setupAutoPlay() {
-    // Để tuân thủ chính sách autoplay của trình duyệt, nhạc sẽ tự động phát sau lượt tương tác đầu tiên của người dùng
     const startPlay = () => {
-      if (player && typeof player.playVideo === 'function' && !muted) {
-        player.playVideo();
+      if (audio && !muted) {
+        audio.play().catch(err => {
+          console.warn("Autoplay blocked by browser policy. Retrying on next gesture.");
+        });
       }
+      // Gỡ bỏ listener sau khi tương tác thành công
       document.removeEventListener('click', startPlay);
       document.removeEventListener('keydown', startPlay);
     };
@@ -81,12 +42,14 @@ const BGM = (() => {
           e.stopPropagation();
           muted = !muted;
           if (muted) {
-            if (player && typeof player.pauseVideo === 'function') player.pauseVideo();
+            if (audio) audio.pause();
             toggleBtn.innerHTML = '🔇';
             toggleBtn.title = 'Bật Nhạc nền';
             toggleBtn.style.color = 'var(--text-muted)';
           } else {
-            if (player && typeof player.playVideo === 'function') player.playVideo();
+            if (audio) {
+              audio.play().catch(err => console.warn("Play failed:", err));
+            }
             toggleBtn.innerHTML = '🎵';
             toggleBtn.title = 'Tắt Nhạc nền';
             toggleBtn.style.color = 'var(--accent)';
@@ -96,17 +59,22 @@ const BGM = (() => {
 
       if (volumeSlider) {
         volumeSlider.addEventListener('input', (e) => {
-          volume = parseInt(e.target.value);
-          if (player && typeof player.setVolume === 'function') {
-            player.setVolume(volume);
+          const val = parseInt(e.target.value);
+          volume = val / 100;
+          if (audio) {
+            audio.volume = volume;
           }
-          if (volume === 0) {
+          if (val === 0) {
             toggleBtn.innerHTML = '🔇';
             toggleBtn.style.color = 'var(--text-muted)';
-          } else if (muted) {
+          } else {
             // Tự động bật lại khi kéo thanh âm lượng lớn hơn 0
-            muted = false;
-            if (player && typeof player.playVideo === 'function') player.playVideo();
+            if (muted) {
+              muted = false;
+              if (audio) {
+                audio.play().catch(err => console.warn("Play failed:", err));
+              }
+            }
             toggleBtn.innerHTML = '🎵';
             toggleBtn.style.color = 'var(--accent)';
           }
@@ -116,7 +84,13 @@ const BGM = (() => {
   }
 
   return {
-    init
+    init,
+    play() {
+      if (audio && !muted) audio.play().catch(e => {});
+    },
+    pause() {
+      if (audio) audio.pause();
+    }
   };
 })();
 
