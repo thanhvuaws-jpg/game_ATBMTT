@@ -2327,3 +2327,18 @@ async function loadAndRenderLeaderboard(type) {
 function _esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+
+// Global Audio hover effects on interactive elements
+document.addEventListener('mouseover', (e) => {
+  const target = e.target.closest('button, .auth-tab, .btn-ghost, .btn-primary, .btn-secondary, [role="button"], input[type="checkbox"], input[type="text"], input[type="password"], input[type="email"]');
+  if (target && !target.disabled && !target.dataset.hoverSoundPlayed) {
+    if (typeof Audio !== 'undefined' && typeof Audio.hover === 'function') {
+      Audio.hover();
+    }
+    target.dataset.hoverSoundPlayed = 'true';
+    setTimeout(() => {
+      delete target.dataset.hoverSoundPlayed;
+    }, 200);
+  }
+});
+

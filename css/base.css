@@ -168,11 +168,45 @@ button:focus-visible {
 }
 .screen.active { display: flex; flex-direction: column; }
 
-/* ─── MENU SCREEN ───────────────────────────────────────────────────────────── */
+/* Interactive Hover Enhancements */
+button, .auth-tab, .btn-ghost, .btn-primary, .btn-secondary {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+button:hover, .auth-tab:hover, .btn-ghost:hover, .btn-primary:hover, .btn-secondary:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 0 10px rgba(232, 163, 61, 0.15);
+}
+
 #screen-menu {
   align-items: center;
   padding: 32px 20px 40px;
-  background: radial-gradient(ellipse at center top, #1a2545 0%, var(--bg-main) 60%);
+  background: linear-gradient(rgba(14, 20, 36, 0.86), rgba(14, 20, 36, 0.93)), url('../assets/cyber_menu_bg.png') no-repeat center center;
+  background-size: cover;
+}
+
+#screen-auth {
+  background: linear-gradient(rgba(14, 20, 36, 0.88), rgba(14, 20, 36, 0.95)), url('../assets/cyber_battle_bg.png') no-repeat center center;
+  background-size: cover;
+}
+
+#screen-lobby, #screen-room-wait, #screen-mp-results {
+  background: linear-gradient(rgba(14, 20, 36, 0.88), rgba(14, 20, 36, 0.95)), url('../assets/cyber_battle_bg.png') no-repeat center center;
+  background-size: cover;
+}
+
+#screen-ch1, #screen-ch2, #screen-ch3 {
+  background: linear-gradient(rgba(14, 20, 36, 0.88), rgba(14, 20, 36, 0.95)), url('../assets/cyber_law_bg.png') no-repeat center center;
+  background-size: cover;
+}
+
+#screen-ch4 {
+  background: linear-gradient(rgba(14, 20, 36, 0.88), rgba(14, 20, 36, 0.95)), url('../assets/cyber_soc_bg.png') no-repeat center center;
+  background-size: cover;
+}
+
+#screen-ch5, #screen-ending {
+  background: linear-gradient(rgba(14, 20, 36, 0.82), rgba(14, 20, 36, 0.92)), url('../assets/cyber_boss_bg.png') no-repeat center center;
+  background-size: cover;
 }
 
 .menu-inner {

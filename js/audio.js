@@ -36,13 +36,17 @@ const Audio = (() => {
 
   return {
     correct() {
-      beep(523, 0.1, 'sine', 0.25);
-      setTimeout(() => beep(659, 0.15, 'sine', 0.25), 80);
-      setTimeout(() => beep(784, 0.2,  'sine', 0.25), 160);
+      beep(523.25, 0.08, 'sine', 0.15);
+      setTimeout(() => beep(659.25, 0.08, 'sine', 0.15), 50);
+      setTimeout(() => beep(783.99, 0.08, 'sine', 0.15), 100);
+      setTimeout(() => beep(1046.50, 0.18, 'sine', 0.2), 150);
     },
     wrong() {
-      beep(220, 0.12, 'sawtooth', 0.2);
-      setTimeout(() => beep(180, 0.18, 'sawtooth', 0.2), 100);
+      beep(150, 0.15, 'sawtooth', 0.22);
+      beep(152, 0.15, 'triangle', 0.22);
+      setTimeout(() => {
+        beep(110, 0.22, 'sawtooth', 0.25);
+      }, 70);
     },
     stamp() {
       beep(300, 0.06, 'square', 0.15);
@@ -56,11 +60,16 @@ const Audio = (() => {
       setTimeout(() => beep(440, 0.08, 'square', 0.15), 150);
     },
     chapterComplete() {
-      chord([523, 659, 784], 0.4, 'sine', 0.18);
-      setTimeout(() => chord([659, 784, 987], 0.5, 'sine', 0.15), 300);
+      chord([523.25, 659.25, 783.99], 0.25, 'sine', 0.15);
+      setTimeout(() => chord([659.25, 783.99, 987.77], 0.25, 'sine', 0.12), 120);
+      setTimeout(() => chord([783.99, 987.77, 1318.51], 0.45, 'sine', 0.1), 240);
     },
     click() {
-      beep(600, 0.05, 'sine', 0.1);
+      beep(650, 0.04, 'sine', 0.08);
+      setTimeout(() => beep(950, 0.03, 'sine', 0.05), 25);
+    },
+    hover() {
+      beep(1200, 0.03, 'sine', 0.04);
     },
     setMuted(v) { muted = v; },
     isMuted() { return muted; }
