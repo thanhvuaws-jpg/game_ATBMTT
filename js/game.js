@@ -767,12 +767,15 @@ function handleCh3Action(action, caseData) {
 // Ch3: player HP = 0 → tạm ngừng, hồi 50 HP, làm lại case
 function handleCh3PlayerDefeated() {
   const charName = Auth.getCharacterName();
-  // Trong MP mode: hồi luôn không hiện overlay (tránh block timer)
+  // Trong MP mode: loại trực tiếp và chuyển tới màn hình kết quả chờ người khác
   if (State.mpMode) {
-    Combat.playerHP = 50;
-    Combat.updatePlayerBar();
-    MP.updateMyState({ hp: 50 });
-    showToast('Hệ thống quá tải — phục hồi 50 HP', 'wrong');
+    showToast('Hệ thống quá tải — Bạn đã bị loại!', 'wrong');
+    clearAllGameplayTimers();
+    const finalRaceScore = getMPTotalScore();
+    MP.finishMyGame(finalRaceScore, 0); // Điểm tín nhiệm về 0
+    Auth.saveScore('race', finalRaceScore);
+    hideMPScoreboard();
+    gotoChapter('mpres');
     return;
   }
   const overlay = document.createElement('div');
@@ -1249,7 +1252,18 @@ function handleCh5Action(action, caseData) {
 
   // ── Player defeated in Ch5? ──
   if (playerDefeated) {
-    handleCh5PlayerDefeated();
+    if (State.mpMode) {
+      showToast('Hệ thống bị xâm nhập — Bạn đã bị loại!', 'wrong');
+      clearAllGameplayTimers();
+      const finalRaceScore = getMPTotalScore();
+      MP.finishMyGame(finalRaceScore, 0); // Điểm tín nhiệm về 0
+      Auth.saveScore('race', finalRaceScore);
+      hideMPScoreboard();
+      gotoChapter('mpres');
+      return;
+    } else {
+      handleCh5PlayerDefeated();
+    }
   }
 
   // ── Next case ──
@@ -1829,6 +1843,12 @@ function getMPTotalScore() {
   return total;
 }
 
+function clearAllGameplayTimers() {
+  clearInterval(State.ch3TimerInterval);
+  clearInterval(State.ch5TimerInterval);
+  clearInterval(State.ch5CaseInterval);
+}
+
 function nextMPChapter() {
   State.mpChapterIndex++;
   if (State.mpChapterIndex < State.mpChapters.length) {
@@ -1943,25 +1963,44 @@ function initMPResults() {
     '</div>' +
   '</div>';
 
-  // One-time snapshot of final results
-  const snap = MP.db.ref('rooms/' + MP.roomCode + '/players').once('value').then(s => {
-    const roomSnap = s.val() || {};
+  const listEl = document.getElementById('mp-results-list');
+  if (!listEl) return;
+
+  // Real-time listener for results
+  const ref = MP.db.ref('rooms/' + MP.roomCode + '/players');
+  const handler = snap => {
+    const roomSnap = snap.val() || {};
     const players  = Object.entries(roomSnap)
       .map(([id, p]) => ({ id, ...p }))
       .sort((a, b) => b.score - a.score);
 
-    const listEl = document.getElementById('mp-results-list');
-    if (!listEl) return;
     listEl.innerHTML = players.map((p, i) => {
       const isMe   = p.id === MP.playerId;
       const medal  = ['🥇','🥈','🥉'][i] || '';
-      const grade  = p.trustScore >= 80 ? 'XUẤT SẮC' : p.trustScore >= 50 ? 'HOÀN THÀNH' : 'THẤT BẠI';
-      const gradeColor = p.trustScore >= 80 ? 'var(--safe)' : p.trustScore >= 50 ? 'var(--accent)' : 'var(--danger)';
+      
+      let grade = '';
+      let gradeColor = 'var(--text-muted)';
+      if (p.status !== 'finished') {
+        grade = 'ĐANG ĐUA...';
+        gradeColor = 'var(--accent)';
+      } else {
+        const isWinner = (i === 0);
+        grade = isWinner ? 'THẮNG CUỘC' : ('HẠNG ' + (i + 1));
+        gradeColor = isWinner ? 'var(--safe)' : 'var(--text-muted)';
+      }
+      
+      const trustText = `Tín nhiệm: ${p.trustScore ?? 0}%`;
+      const trustColor = (p.trustScore ?? 0) >= 50 ? 'var(--accent)' : 'var(--danger)';
+
       return '<div class="mp-result-row' + (isMe ? ' mp-result-me' : '') + '">' +
         '<div class="mp-result-rank">' + (medal || (i + 1) + '.') + '</div>' +
         '<div class="mp-result-info">' +
-          '<div class="mp-result-name">' + _esc(p.name) + (isMe ? ' — bạn' : '') + '</div>' +
-          '<div class="mp-result-grade" style="color:' + gradeColor + '">' + grade + '</div>' +
+          '<div class="mp-result-name">' + _esc(p.name) + (isMe ? ' (Bạn)' : '') + '</div>' +
+          '<div style="display: flex; gap: 8px; font-size: 11px; margin-top: 2px;">' +
+            '<span class="mp-result-grade" style="color:' + gradeColor + '; font-weight: bold;">' + grade + '</span>' +
+            '<span style="color: rgba(255,255,255,0.15)">|</span>' +
+            '<span style="color: ' + trustColor + '">' + trustText + '</span>' +
+          '</div>' +
         '</div>' +
         '<div class="mp-result-score">' +
           '<div class="mp-rs-num">' + (p.score || 0) + '</div>' +
@@ -1969,7 +2008,10 @@ function initMPResults() {
         '</div>' +
       '</div>';
     }).join('');
-  });
+  };
+
+  ref.on('value', handler);
+  MP._listeners.push({ ref, event: 'value', handler });
 
   document.getElementById('btn-mp-again')?.addEventListener('click', () => {
     Audio.click();
@@ -2082,7 +2124,7 @@ async function loadAndRenderLeaderboard(type) {
     return;
   }
 
-  const myUid  = Auth.user?.uid;
+  const myUid  = Auth.user ? Auth.user.uid : localStorage.getItem('csGuestUID');
   const labels = { trust: 'Tín nhiệm', race: 'Điểm đua' };
   const colors = { trust: 'var(--safe)', race: 'var(--accent)' };
 

@@ -77,6 +77,15 @@ const Auth = {
     return snap.val();
   },
 
+  getOrCreateGuestUID() {
+    let uid = localStorage.getItem('csGuestUID');
+    if (!uid) {
+      uid = 'guest_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      localStorage.setItem('csGuestUID', uid);
+    }
+    return uid;
+  },
+
   getCharacterName() {
     if (this.profile && this.profile.displayName) {
       return this.profile.displayName;
@@ -89,8 +98,8 @@ const Auth = {
   // ─── Lưu điểm leaderboard ──────────────────────────────────────────────────
   // type: 'trust' (solo) | 'race' (multiplayer)
   async saveScore(type, score) {
-    if (!this.isLoggedIn() || !this._db) return;
-    const uid  = this.user.uid;
+    if (!this._db) return;
+    const uid  = this.user ? this.user.uid : this.getOrCreateGuestUID();
     const name = this.getCharacterName();
     const ref  = this._db.ref('leaderboard/' + type + '/' + uid);
     const snap = await ref.once('value');
@@ -98,7 +107,7 @@ const Auth = {
     if (!cur || score > (cur.score || 0)) {
       await ref.set({ name, score, updatedAt: firebase.database.ServerValue.TIMESTAMP });
     }
-    if (type === 'trust') {
+    if (type === 'trust' && this.user) {
       await this._db.ref('users/' + uid + '/stats/gamesPlayed')
         .transaction(v => (v || 0) + 1);
     }
