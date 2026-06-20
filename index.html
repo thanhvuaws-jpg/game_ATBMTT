@@ -44,6 +44,10 @@
     <button id="btn-exit-mission" title="Thoát nhiệm vụ" class="hidden" style="background:none; border:1px solid rgba(214,69,80,0.5); background:rgba(214,69,80,0.1); color:var(--danger); font-family:var(--font-mono); font-size:10px; padding:6px 12px; border-radius:var(--radius); font-weight:bold; cursor:pointer;">
       THOÁT MÀN
     </button>
+    <div class="bgm-control-wrap">
+      <button id="btn-bgm-toggle" title="Tắt Nhạc nền">🎵</button>
+      <input type="range" id="slider-bgm-volume" min="0" max="100" value="40" title="Âm lượng nhạc nền">
+    </div>
     <button id="btn-mute" title="Bật/tắt âm thanh">🔊</button>
   </header>
 
@@ -140,6 +144,7 @@
 
 <script src="js/data.js"></script>
 <script src="js/audio.js"></script>
+<script src="js/bgm.js"></script>
 <script src="js/combat.js"></script>
 <script src="js/skills.js"></script>
 <script src="js/firebase-config.js"></script>
