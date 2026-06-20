@@ -1094,7 +1094,7 @@ function handleCh4Choice(incId, choice, round) {
     if (staffId === "s1" && (incData.priority === "MEDIUM" || incData.priority === "LOW")) {
       specialtyBonus = 5;
       bonusMsg = " (Thưởng chuyên môn Hùng: +5đ)";
-    } else if (staffId === "s2" && (incData.priority === "CRITICAL" || incData.priority === "HIGH")) {
+    } else if (staffId === "s2" && (incData.priority === "CRITICAL" || incData.priority === "HIGH") && choice === 'internal') {
       specialtyBonus = 5;
       bonusMsg = " (Thưởng chuyên môn Linh: +5đ)";
     } else if (staffId === "s3" && choice === 'report') {
@@ -1779,7 +1779,9 @@ function resumeGameplay() {
     const caseIdx = State.mpMode
       ? (State.mpCaseOrder[State.ch3CaseIndex] ?? State.ch3CaseIndex)
       : State.ch3CaseIndex;
-    const c = GAME_DATA.chapter3.cases[caseIdx];
+    const c = State.mpMode
+      ? GAME_DATA.chapter3.cases[caseIdx]
+      : State.ch3CasesList[caseIdx];
     if (c && !State.ch3AwaitingNext) {
       startCh3Timer(c, State.ch3Timer);
     }

@@ -89,8 +89,8 @@ Game được xây dựng nhằm mục đích **học tập và nghiên cứu** 
 | Nhân viên | Vai trò | Cơ chế đặc thù (Thưởng +5 điểm) |
 |-----------|---------|--------------------------------|
 | 🔵 Hùng | Phân tích mạng | Giải quyết các sự cố độ ưu tiên vừa/thấp (`MEDIUM` hoặc `LOW`) |
-| 🟢 Linh | Phản ứng sự cố | Giải quyết các sự cố khẩn cấp (`CRITICAL` hoặc `HIGH`) |
-| 🟡 Tuấn | Điều tra số | Giải quyết các phương án cần "Báo cáo cơ quan chức năng" |
+| 🟢 Linh | Phản ứng sự cố | Giải quyết các sự cố nghiêm trọng (`CRITICAL` hoặc `HIGH`) có phương án Tự xử lý nội bộ |
+| 🟡 Tuấn | Điều tra số & Pháp lý | Giải quyết mọi sự cố yêu cầu Báo cáo cơ quan chức năng |
 
 - **Cơ chế phân công**: Chọn nhân viên trước khi nhấp chọn giải pháp xử lý. Nhân viên đang bận sẽ không thể đảm nhận ca mới. Hệ thống sẽ tự động đề xuất nhân viên sẵn sàng tiếp theo.
 
