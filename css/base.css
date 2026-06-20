@@ -977,9 +977,23 @@ button:hover, .auth-tab:hover, .btn-ghost:hover, .btn-primary:hover, .btn-second
   align-items: center;
   gap: 10px;
   flex: 1;
-  transition: opacity 0.3s;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
-.staff-card.busy { opacity: 0.45; }
+.staff-card:hover {
+  border-color: var(--accent);
+  background: rgba(232, 163, 61, 0.05);
+}
+.staff-card.selected {
+  border-color: var(--safe);
+  box-shadow: 0 0 10px rgba(63, 167, 150, 0.4);
+  background: rgba(63, 167, 150, 0.08);
+}
+.staff-card.busy {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 .staff-avatar {
   width: 36px; height: 36px;

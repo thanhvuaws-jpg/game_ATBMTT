@@ -1374,7 +1374,9 @@ const GAME_DATA = {
             priority: "CRITICAL",
             options: [
               {
-                label: "Tuyệt đối không! Đây là hành vi gián điệp quốc tế xâm hại an ninh chính trị quốc gia. Phải báo cáo ngay lập tức cho cơ quan tình báo mạng và Bộ Công an.",
+                label: "Tự xử lý nội bộ",
+                correct: false,
+                explanation: "Tuyệt đối không! Đây là hành vi gián điệp quốc tế xâm hại an ninh chính trị quốc gia. Phải báo cáo ngay lập tức cho cơ quan tình báo mạng và Bộ Công an.",
                 score: -25
               },
               {

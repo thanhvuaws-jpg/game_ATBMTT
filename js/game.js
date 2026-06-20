@@ -606,6 +606,17 @@ function initChapter3() {
   State.ch3AwaitingNext = false;
   clearInterval(State.ch3TimerInterval);
 
+  if (State.mpMode) {
+    State.ch3CasesList = [...GAME_DATA.chapter3.cases];
+  } else {
+    const fullPool = [...GAME_DATA.chapter3.cases];
+    for (let i = fullPool.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+    }
+    State.ch3CasesList = fullPool.slice(0, 15);
+  }
+
   // Combat: chỉ thanh máu player, không có boss
   Combat.init(false);
   renderCh3Stats();
@@ -626,18 +637,21 @@ function renderCh3Stats() {
     </div>
     <div class="ch3-stat">
       <span class="ch3-stat-label">Case</span>
-      <span class="ch3-stat-value">${State.ch3CaseIndex + 1} / ${GAME_DATA.chapter3.cases.length}</span>
+      <span class="ch3-stat-value">${State.ch3CaseIndex + 1} / ${State.ch3CasesList.length}</span>
     </div>`;
 }
 
 function renderCh3Case() {
-  if (State.ch3CaseIndex >= GAME_DATA.chapter3.cases.length) {
+  const totalCases = State.mpMode ? GAME_DATA.chapter3.cases.length : State.ch3CasesList.length;
+  if (State.ch3CaseIndex >= totalCases) {
     finishChapter3(); return;
   }
   const caseIdx = State.mpMode
     ? (State.mpCaseOrder[State.ch3CaseIndex] ?? State.ch3CaseIndex)
     : State.ch3CaseIndex;
-  const c = GAME_DATA.chapter3.cases[caseIdx];
+  const c = State.mpMode
+    ? GAME_DATA.chapter3.cases[caseIdx]
+    : State.ch3CasesList[caseIdx];
   setCaseLabel(c.caseNumber);
   State.ch3AwaitingNext = false;
   clearInterval(State.ch3TimerInterval);
@@ -990,8 +1004,8 @@ function renderCh4Round() {
           </div>
           <div class="incident-desc">${inc.description}</div>
           <div class="incident-actions">
-            <button class="inc-btn inc-btn-internal" data-inc="${inc.id}" data-choice="internal">Tự xử lý nội bộ</button>
-            <button class="inc-btn inc-btn-report"   data-inc="${inc.id}" data-choice="report">Báo cáo cơ quan chức năng</button>
+            <button class="inc-btn inc-btn-internal" data-inc="${inc.id}" data-choice="internal">${inc.options[0].label}</button>
+            <button class="inc-btn inc-btn-report"   data-inc="${inc.id}" data-choice="report">${inc.options[1].label}</button>
           </div>
           <div class="incident-result" id="ir-${inc.id}"></div>
         </div>`).join('')}
@@ -999,6 +1013,22 @@ function renderCh4Round() {
     <button class="ch4-next-btn" id="ch4-next">Lượt tiếp theo</button>`;
 
   State.ch4RoundAnswered = 0;
+  
+  // Set default selected staff
+  State.ch4SelectedStaff = "s1";
+  const defaultStaffCard = document.getElementById('staff-s1');
+  if (defaultStaffCard) defaultStaffCard.classList.add('selected');
+
+  // Handle staff click event
+  document.querySelectorAll('.staff-card').forEach(card => {
+    card.addEventListener('click', () => {
+      if (card.classList.contains('busy')) return;
+      Audio.click();
+      document.querySelectorAll('.staff-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      State.ch4SelectedStaff = card.id.replace('staff-', '');
+    });
+  });
 
   document.querySelectorAll('[data-choice]').forEach(btn => {
     btn.addEventListener('click', () => handleCh4Choice(btn.dataset.inc, btn.dataset.choice, round));
@@ -1022,16 +1052,70 @@ function renderCh4Round() {
 function handleCh4Choice(incId, choice, round) {
   const incData = round.incidents.find(i => i.id === incId);
   if (!incData) return;
+
+  if (!State.ch4SelectedStaff) {
+    showToast("Vui lòng chọn nhân viên xử lý trước!", "info");
+    return;
+  }
+
   document.querySelectorAll(`[data-inc="${incId}"]`).forEach(b => b.disabled = true);
 
   const option  = incData.options[choice === 'internal' ? 0 : 1];
   const correct = option.correct;
+
+  const staffId = State.ch4SelectedStaff;
+  const staffMember = GAME_DATA.chapter4.staff.find(s => s.id === staffId);
+
+  // Mark staff card as busy
+  const staffCard = document.getElementById(`staff-${staffId}`);
+  if (staffCard) {
+    staffCard.classList.remove('selected');
+    staffCard.classList.add('busy');
+    const statusEl = staffCard.querySelector('.staff-status');
+    if (statusEl) {
+      statusEl.classList.remove('status-free');
+      statusEl.classList.add('status-busy');
+      statusEl.textContent = "Đang bận";
+    }
+  }
+
+  // Calculate specialty bonus
+  let specialtyBonus = 0;
+  let bonusMsg = "";
+  if (correct) {
+    if (staffId === "s1" && (incData.priority === "MEDIUM" || incData.priority === "LOW")) {
+      specialtyBonus = 5;
+      bonusMsg = " (Thưởng chuyên môn Hùng: +5đ)";
+    } else if (staffId === "s2" && (incData.priority === "CRITICAL" || incData.priority === "HIGH")) {
+      specialtyBonus = 5;
+      bonusMsg = " (Thưởng chuyên môn Linh: +5đ)";
+    } else if (staffId === "s3" && choice === 'report') {
+      specialtyBonus = 5;
+      bonusMsg = " (Thưởng chuyên môn Tuấn: +5đ)";
+    }
+  }
+
+  // Auto-select another free staff member
+  const remainingStaff = GAME_DATA.chapter4.staff.find(s => {
+    const card = document.getElementById(`staff-${s.id}`);
+    return card && !card.classList.contains('busy');
+  });
+  if (remainingStaff) {
+    State.ch4SelectedStaff = remainingStaff.id;
+    const nextCard = document.getElementById(`staff-${remainingStaff.id}`);
+    if (nextCard) nextCard.classList.add('selected');
+  } else {
+    State.ch4SelectedStaff = null;
+  }
+
   const resultEl = document.getElementById(`ir-${incId}`);
   if (resultEl) {
     resultEl.classList.add('show', correct ? 'correct' : 'wrong');
-    resultEl.textContent = option.explanation;
+    let feedback = `[${staffMember ? staffMember.name : "SOC"}] ${option.explanation}`;
+    if (specialtyBonus > 0) feedback += bonusMsg;
+    resultEl.textContent = feedback;
   }
-  State.ch4Score += option.score;
+  State.ch4Score += (option.score + specialtyBonus);
   setTrust(option.score > 0 ? 3 : -5);
   if (correct) Audio.correct(); else Audio.wrong();
 
@@ -1072,8 +1156,48 @@ function initChapter5() {
   clearInterval(State.ch5TimerInterval);
   clearInterval(State.ch5CaseInterval);
 
+  // Resolve pool from poolIds
+  const poolIds = GAME_DATA.chapter5.poolIds || [];
+  const pool = [];
+  poolIds.forEach(id => {
+    if (id.startsWith('c3_')) {
+      const c = GAME_DATA.chapter3.cases.find(x => x.id === id);
+      if (c) pool.push(c);
+    } else if (id.startsWith('c2_')) {
+      const c = GAME_DATA.chapter2.cards.find(x => x.id === id);
+      if (c) {
+        let correctActions = ["block"];
+        let correctLabel = "CHẶN";
+        if (c.correct === "crime") {
+          correctActions = ["report"];
+          correctLabel = "BÁO CÁO";
+        } else if (c.correct === "both") {
+          correctActions = ["block", "report"];
+          correctLabel = "CHẶN + BÁO CÁO";
+        }
+        pool.push({
+          id: c.id,
+          caseNumber: "CASE-C2-" + c.id.split('_')[1],
+          severity: c.correct === "both" ? "HIGH" : "MEDIUM",
+          difficulty: "medium",
+          title: c.title || "Sự cố phân loại",
+          description: c.description,
+          source: "Hệ thống giám sát SOC",
+          correct: correctActions,
+          correctLabel: correctLabel,
+          lawRef: "Luật ANM 2025",
+          explanation: c.explanation
+        });
+      }
+    }
+  });
+
+  // Fallback
+  if (pool.length === 0) {
+    pool.push(...GAME_DATA.chapter3.cases);
+  }
+
   // Shuffle pool
-  const pool = [...GAME_DATA.chapter3.cases];
   for (let i = pool.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
