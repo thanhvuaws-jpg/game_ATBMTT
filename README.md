@@ -272,7 +272,7 @@ Toàn bộ tình huống, câu hỏi và giải thích trong game đều dựa t
 
 ## 👥 Nhóm phát triển
 
-Đồ án môn **An toàn Bảo mật Thông tin**
+- **dev vũ deptrai**
 
 ---
 
