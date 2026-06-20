@@ -56,7 +56,7 @@ Game được xây dựng nhằm mục đích **học tập và nghiên cứu** 
 ---
 
 #### 🗂️ Chương 2 — Phân loại Tấn công & Tội phạm
-- **8 thẻ tình huống** thực tế (ransomware, deepfake, lừa đảo, DDoS...)
+- **20 thẻ tình huống** thực tế (ransomware, deepfake, lừa đảo, DDoS...)
 - **Kéo-thả** vào đúng danh mục:
 
 ```

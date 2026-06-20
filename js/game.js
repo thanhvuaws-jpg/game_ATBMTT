@@ -597,7 +597,7 @@ function setupDragDrop() {
 
 function finishChapter2() {
   if (State.ch2Score >= 50) {
-    showChapterComplete('Chương 2 Hoàn Thành', `Điểm phân loại: ${State.ch2Score}/80 — Mở khóa Vùng cấm.`, () => gotoChapter(3));
+    showChapterComplete('Chương 2 Hoàn Thành', `Điểm phân loại: ${State.ch2Score}/200 — Mở khóa Vùng cấm.`, () => gotoChapter(3));
   } else {
     showToast(`Điểm chưa đủ (${State.ch2Score}/50). Thử lại!`, 'wrong');
     setTimeout(() => initChapter2(), 1500);
