@@ -1,4 +1,4 @@
-﻿/* ═══════════════════════════════════════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════════════════════════════
    SKILL TREE & TP SYSTEM
    ═══════════════════════════════════════════════════════════════════════════════ */
 
@@ -6,17 +6,25 @@
 #tp-display {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 6px;
   font-family: var(--font-mono);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
   color: var(--accent);
-  background: rgba(232,163,61,0.10);
-  padding: 3px 10px;
-  border-radius: var(--radius);
-  border: 1px solid rgba(232,163,61,0.28);
+  background: rgba(232, 163, 61, 0.08);
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(232, 163, 61, 0.35);
+  box-shadow: 0 0 8px rgba(232, 163, 61, 0.15), inset 0 0 4px rgba(232, 163, 61, 0.10);
   white-space: nowrap;
   user-select: none;
+  transition: all 0.2s ease;
+}
+#tp-display:hover {
+  background: rgba(232, 163, 61, 0.15);
+  border-color: rgba(232, 163, 61, 0.6);
+  box-shadow: 0 0 12px rgba(232, 163, 61, 0.3);
+  transform: translateY(-1px);
 }
 
 .tp-unit {
@@ -26,13 +34,23 @@
 }
 
 #btn-pause {
-  background: none;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--text-muted);
-  padding: 4px 6px;
-  border-radius: var(--radius);
-  transition: color 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 6px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
-#btn-pause:hover { color: var(--accent); }
+#btn-pause:hover {
+  background: rgba(232, 163, 61, 0.08);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 8px rgba(232, 163, 61, 0.2);
+}
 
 /* ─── Floating TP ──────────────────────────────────────────────────────────── */
 .floating-tp {
