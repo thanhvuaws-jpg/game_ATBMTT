@@ -51,7 +51,7 @@ Game được xây dựng nhằm mục đích **học tập và nghiên cứu** 
 
 #### 📘 Chương 1 — Tutorial: Nhập môn SOC
 - Hội thoại với **Chị Mai** (Giám đốc SOC) để nắm nền tảng pháp lý
-- Trả lời **5 câu trắc nghiệm** về Luật ANM 2025, Nghị định 13/2023, vai trò A05
+- Trả lời **5 câu trắc nghiệm ngẫu nhiên** (hệ thống tự động xáo trộn từ ngân hàng câu hỏi) về Luật ANM 2025, Nghị định 13/2023, vai trò A05
 
 ---
 
@@ -76,26 +76,29 @@ Game được xây dựng nhằm mục đích **học tập và nghiên cứu** 
 - Case ticket liên tục xuất hiện: deepfake CEO, ransomware, rò rỉ dữ liệu...
 - Mỗi case chỉ có **8 giây** để đọc và ra phán quyết đúng theo luật
 - Đúng: **+15 điểm** + tăng combo | Sai: **-10 điểm** + mất HP
+- **Thời lượng chơi tối ưu hóa**: 
+  - **Chơi đơn**: Hệ thống rút ngẫu nhiên **15/33 case** để người chơi không bị quá tải.
+  - **Chơi mạng**: Giữ nguyên toàn bộ **33 case** để đảm bảo đồng bộ thi đấu.
 - Hệ thống **thanh máu HP** — mất hết = thất bại
 
 ---
 
 #### 🏢 Chương 4 — Điều phối Đội Phản ứng SOC
-- Đóng vai **Trưởng nhóm**, chỉ huy 3 nhân viên:
+- Đóng vai **Trưởng nhóm**, chỉ huy 3 nhân viên có chuyên môn đặc thù:
 
-| Nhân viên | Vai trò |
-|-----------|---------|
-| 🔵 Hùng | Phân tích mạng |
-| 🟢 Linh | Phản ứng sự cố |
-| 🟡 Tuấn | Điều tra số |
+| Nhân viên | Vai trò | Cơ chế đặc thù (Thưởng +5 điểm) |
+|-----------|---------|--------------------------------|
+| 🔵 Hùng | Phân tích mạng | Giải quyết các sự cố độ ưu tiên vừa/thấp (`MEDIUM` hoặc `LOW`) |
+| 🟢 Linh | Phản ứng sự cố | Giải quyết các sự cố khẩn cấp (`CRITICAL` hoặc `HIGH`) |
+| 🟡 Tuấn | Điều tra số | Giải quyết các phương án cần "Báo cáo cơ quan chức năng" |
 
-- Nhiều sự cố xảy ra đồng thời mỗi lượt — chọn người xử lý và phương án đúng (cách ly, báo A05, điều tra log...)
+- **Cơ chế phân công**: Chọn nhân viên trước khi nhấp chọn giải pháp xử lý. Nhân viên đang bận sẽ không thể đảm nhận ca mới. Hệ thống sẽ tự động đề xuất nhân viên sẵn sàng tiếp theo.
 
 ---
 
 #### 💀 Chương 5 — Quyết đấu Boss GHOST_VN
 - Đồng hồ đếm ngược **90 giây**
-- Case ngẫu nhiên từ pool Ch2 + Ch3 liên tục xuất hiện
+- **Trộn thẻ tự động**: Case ngẫu nhiên được tổng hợp từ pool Ch3 và các thẻ phân loại của Ch2 (tự động ánh xạ sang định dạng Ticket Chặn/Báo cáo).
 - Mỗi lần đúng → đánh vào **HP Boss GHOST_VN**, mỗi lần sai → mất HP của bạn
 - Tiêu diệt Boss → kết thúc hoàn hảo
 

@@ -334,6 +334,14 @@ function initChapter1() {
   State.ch1DialogueIndex = 0;
   State.ch1QuizIndex = 0;
 
+  // Shuffle and slice Chapter 1 quiz to 5 questions
+  const fullPool = [...GAME_DATA.chapter1.quiz];
+  for (let i = fullPool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [fullPool[i], fullPool[j]] = [fullPool[j], fullPool[i]];
+  }
+  State.ch1QuizList = fullPool.slice(0, 5);
+
   const charName = Auth.getCharacterName();
   const avatarLongName = document.querySelector('#avatar-long .avatar-name');
   if (avatarLongName) {
@@ -374,7 +382,7 @@ function renderDialogue() {
 }
 
 function renderCh1Quiz() {
-  const data = GAME_DATA.chapter1.quiz;
+  const data = State.ch1QuizList || GAME_DATA.chapter1.quiz;
   if (State.ch1QuizIndex >= data.length) {
     showChapterComplete('Chương 1 Hoàn Thành', 'Bàn làm việc SOC đã sẵn sàng.', () => {
       if (Skills.isFirstOpen) {
