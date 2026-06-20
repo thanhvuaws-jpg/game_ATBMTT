@@ -24,7 +24,8 @@
 
 html, body {
   height: 100%;
-  background: var(--bg-main);
+  background: linear-gradient(rgba(14, 20, 36, 0.88), rgba(14, 20, 36, 0.95)), url('../assets/cyber_battle_bg.png') no-repeat center center fixed;
+  background-size: cover;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 15px;
