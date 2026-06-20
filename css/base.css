@@ -175,12 +175,43 @@ button:focus-visible {
 }
 
 .menu-inner {
-  max-width: 600px;
+  max-width: 1100px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 24px;
+}
+
+.menu-layout-grid {
+  display: grid;
+  grid-template-columns: 1.25fr 1fr;
+  gap: 40px;
+  width: 100%;
+  margin-top: 10px;
+  align-items: start;
+}
+
+.menu-left-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 20px;
+  width: 100%;
+}
+
+.menu-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .menu-layout-grid {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
 }
 
 .menu-badge {
