@@ -5,10 +5,13 @@ const BGM = (() => {
   let volume = 0.4; // Âm lượng mặc định 40% (HTML5 Audio dùng từ 0.0 đến 1.0)
 
   function init() {
-    // 1. Tạo đối tượng Audio HTML5
-    audio = new window.Audio('assets/bgm.m4a');
+    // 1. Tạo đối tượng Audio HTML5 với cấu hình preload tối ưu
+    audio = new window.Audio();
+    audio.preload = 'auto';
+    audio.src = 'assets/bgm.m4a';
     audio.loop = true;
     audio.volume = volume;
+    audio.load(); // Tải trước dữ liệu âm thanh ngay khi load trang
 
     // 2. Thiết lập tự động phát sau tương tác đầu tiên của người dùng
     setupAutoPlay();
