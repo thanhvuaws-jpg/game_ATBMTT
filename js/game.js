@@ -65,13 +65,25 @@ function setCaseLabel(label) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+
+  const isCh = ['screen-ch1', 'screen-ch2', 'screen-ch3', 'screen-ch4', 'screen-ch5'].includes(id);
+  const btnExit = document.getElementById('btn-exit-mission');
+  if (btnExit) {
+    if (isCh && !State.mpMode) {
+      btnExit.classList.remove('hidden');
+    } else {
+      btnExit.classList.add('hidden');
+    }
+  }
 }
 
 function showToast(text, type = 'info') {
   const container = document.getElementById('toast-container');
+  if (!container) return;
   const t = document.createElement('div');
   t.className = `toast toast-${type}`;
-  t.textContent = text;
+  const icon = type === 'correct' ? '✅' : type === 'wrong' ? '❌' : '🔔';
+  t.innerHTML = `<span style="font-size:16px;">${icon}</span><span style="flex:1;">${text}</span>`;
   container.appendChild(t);
   setTimeout(() => t.remove(), 3100);
 }
@@ -128,6 +140,78 @@ function loadSave() {
   return s ? JSON.parse(s) : null;
 }
 
+function initGuideTicker() {
+  const tickerEl = document.getElementById('ticker-text');
+  const container = document.getElementById('ticker-floating-chars');
+  if (!tickerEl) return;
+
+  const guides = [
+    "[CHƯƠNG 1: TẬP HUẤN] Đọc đoạn đối thoại giữa chuyên viên SOC Mai và Long, sau đó trả lời câu hỏi trắc nghiệm về Luật An ninh mạng.",
+    "[CHƯƠNG 2: PHÂN LOẠI] Chạm vào thẻ sự kiện, sau đó chạm vào vùng phân loại (Tấn công mạng / Tội phạm mạng) để di chuyển chúng.",
+    "[CHƯƠNG 3: TRỰC SOC] Phân tích logs trực tiếp dưới áp lực thời gian. Quyết định CHẶN, CHO QUA hoặc BÁO CÁO trước khi hết khiên HP!",
+    "[CHƯƠNG 4: THỦ TỤC] Sắp xếp các bước phản ứng sự cố theo đúng trình tự pháp luật quy định.",
+    "[CHƯƠNG 5: KHẮC PHỤC] Chiến đấu với Boss Ghost_VN! Chọn đúng tổ hợp combo hành động nghiệp vụ để vô hiệu hóa mã độc."
+  ];
+
+  let currentIdx = 0;
+  let typeInterval = null;
+
+  function typeText(text) {
+    if (State.tickerIntervals && State.tickerIntervals.typeInterval) {
+      clearInterval(State.tickerIntervals.typeInterval);
+    }
+    tickerEl.textContent = '';
+    let i = 0;
+    typeInterval = setInterval(() => {
+      if (i < text.length) {
+        tickerEl.textContent += text.charAt(i);
+        i++;
+      } else {
+        clearInterval(typeInterval);
+      }
+    }, 25);
+    if (!State.tickerIntervals) State.tickerIntervals = {};
+    State.tickerIntervals.typeInterval = typeInterval;
+  }
+
+  function spawnChar() {
+    if (!container) return;
+    const char = ['0', '1', 'SOC', 'ANM', 'LAW', 'SHIELD', 'x', 'a', 'y'][Math.floor(Math.random() * 9)];
+    const el = document.createElement('span');
+    el.className = 'floating-char';
+    el.textContent = char;
+    el.style.left = Math.random() * 90 + '%';
+    el.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
+    container.appendChild(el);
+    setTimeout(() => el.remove(), 2500);
+  }
+
+  // Clear existing intervals if any
+  if (State.tickerIntervals) {
+    clearInterval(State.tickerIntervals.cycleInterval);
+    clearInterval(State.tickerIntervals.charInterval);
+    clearInterval(State.tickerIntervals.typeInterval);
+  }
+
+  // Start typewriter
+  typeText(guides[currentIdx]);
+  
+  // Cycle texts every 7.5 seconds
+  const cycleInterval = setInterval(() => {
+    currentIdx = (currentIdx + 1) % guides.length;
+    typeText(guides[currentIdx]);
+  }, 7500);
+
+  // Spawn drifting characters every 350ms
+  const charInterval = setInterval(() => {
+    if (document.getElementById('screen-menu')?.classList.contains('active')) {
+      spawnChar();
+    }
+  }, 350);
+
+  State.tickerIntervals = { cycleInterval, charInterval, typeInterval };
+}
+
 // ─── MENU ────────────────────────────────────────────────────────────────────
 function initMenu() {
   Combat.hide();
@@ -135,6 +219,7 @@ function initMenu() {
   State.mpMode = false;
   State.currentChapter = 0;
   showScreen('screen-menu');
+  initGuideTicker();
   setCaseLabel('---');
 
   // Cập nhật tên nhân vật trong header và subtitle
@@ -392,66 +477,113 @@ function renderCh2Board() {
   setupDragDrop();
 }
 
+function placeCh2Card(cardEl, zone) {
+  const cardData = GAME_DATA.chapter2.cards.find(c => c.id === State.ch2DragId);
+  if (!cardData) return;
+
+  const zoneId  = zone.dataset.zone;
+  const correct = cardData.correct === zoneId;
+  cardEl.dataset.placed = '1';
+  cardEl.classList.add(correct ? 'placed-correct' : 'placed-wrong');
+  
+  // Clear classes
+  cardEl.classList.remove('selected');
+  document.querySelectorAll('.drag-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('can-drop'));
+  
+  zone.appendChild(cardEl);
+  cardEl.draggable = false;
+
+  if (correct) {
+    State.ch2Score += 10;
+    Audio.correct();
+    showToast(`Đúng! ${cardData.explanation}`, 'correct');
+  } else {
+    State.ch2Score = Math.max(0, State.ch2Score - 5);
+    Audio.wrong();
+    showToast(`Sai. ${cardData.explanation}`, 'wrong');
+  }
+  document.getElementById('ch2-score-display').textContent = State.ch2Score;
+  setTrust(correct ? 2 : -1);
+
+  const placedCount = document.querySelectorAll('[data-placed]').length;
+  if (State.mpMode) {
+    MP.updateMyState({
+      currentChapter: 2,
+      score: getMPTotalScore(),
+      trustScore: State.trustScore,
+      caseIndex: placedCount,
+      hp: 100
+    });
+  }
+
+  if (placedCount === GAME_DATA.chapter2.cards.length) {
+    if (State.mpMode) {
+      setTimeout(() => nextMPChapter(), 1500);
+    } else {
+      setTimeout(() => finishChapter2(), 800);
+    }
+  }
+  State.ch2DragId = null;
+}
+
 function setupDragDrop() {
   document.querySelectorAll('.drag-card').forEach(card => {
+    // Native drag start
     card.addEventListener('dragstart', e => {
       State.ch2DragId = card.dataset.id;
       card.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
     });
     card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+    // Tap-to-select for mobile & ease of use
+    card.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (card.dataset.placed === '1') return;
+      
+      const isSelected = card.classList.contains('selected');
+      document.querySelectorAll('.drag-card').forEach(c => c.classList.remove('selected'));
+      document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('can-drop'));
+      
+      if (!isSelected) {
+        card.classList.add('selected');
+        State.ch2DragId = card.dataset.id;
+        document.querySelectorAll('.drop-zone').forEach(z => z.add ? z.classList.add('can-drop') : z.classList.add('can-drop'));
+      } else {
+        State.ch2DragId = null;
+      }
+    });
   });
 
   document.querySelectorAll('.drop-zone').forEach(zone => {
     zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
     zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    
+    // Tap to drop
+    zone.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (!State.ch2DragId) return;
+      const cardEl = document.getElementById(`dc-${State.ch2DragId}`);
+      if (!cardEl || cardEl.dataset.placed === '1') return;
+      placeCh2Card(cardEl, zone);
+    });
+
     zone.addEventListener('drop', e => {
       e.preventDefault();
       zone.classList.remove('drag-over');
       if (!State.ch2DragId) return;
-      const cardData = GAME_DATA.chapter2.cards.find(c => c.id === State.ch2DragId);
-      const cardEl   = document.getElementById(`dc-${State.ch2DragId}`);
-      if (!cardEl || cardEl.dataset.placed) return;
-
-      const zoneId  = zone.dataset.zone;
-      const correct = cardData.correct === zoneId;
-      cardEl.dataset.placed = '1';
-      cardEl.classList.add(correct ? 'placed-correct' : 'placed-wrong');
-      zone.appendChild(cardEl);
-      cardEl.draggable = false;
-
-      if (correct) {
-        State.ch2Score += 10;
-        Audio.correct();
-        showToast(`Đúng! ${cardData.explanation}`, 'correct');
-      } else {
-        State.ch2Score = Math.max(0, State.ch2Score - 5);
-        Audio.wrong();
-        showToast(`Sai. ${cardData.explanation}`, 'wrong');
-      }
-      document.getElementById('ch2-score-display').textContent = State.ch2Score;
-      setTrust(correct ? 2 : -1);
-
-      const placedCount = document.querySelectorAll('[data-placed]').length;
-      if (State.mpMode) {
-        MP.updateMyState({
-          currentChapter: 2,
-          score: getMPTotalScore(),
-          trustScore: State.trustScore,
-          caseIndex: placedCount,
-          hp: 100
-        });
-      }
-
-      if (placedCount === GAME_DATA.chapter2.cards.length) {
-        if (State.mpMode) {
-          setTimeout(() => nextMPChapter(), 1500);
-        } else {
-          setTimeout(() => finishChapter2(), 800);
-        }
-      }
-      State.ch2DragId = null;
+      const cardEl = document.getElementById(`dc-${State.ch2DragId}`);
+      if (!cardEl || cardEl.dataset.placed === '1') return;
+      placeCh2Card(cardEl, zone);
     });
+  });
+
+  // Click outside to cancel selection
+  document.addEventListener('click', () => {
+    document.querySelectorAll('.drag-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('can-drop'));
+    State.ch2DragId = null;
   });
 }
 
@@ -624,10 +756,10 @@ function renderCh3Case() {
   startCh3Timer(c);
 }
 
-function startCh3Timer(caseData) {
+function startCh3Timer(caseData, timeLeft) {
   const circumference = 2 * Math.PI * 18;
   const total = 8 + Skills.getTimerBonus();
-  State.ch3Timer = total;
+  State.ch3Timer = (timeLeft !== undefined) ? timeLeft : total;
   State.ch3TimerInterval = setInterval(() => {
     State.ch3Timer--;
     const num  = document.getElementById('timer-num');
@@ -1122,6 +1254,13 @@ function renderCh5Case() {
     handleCh5Action(selectedActions, c);
   });
 
+  startCh5CaseTimer(c);
+}
+
+function startCh5CaseTimer(c, timeLeft) {
+  clearInterval(State.ch5CaseInterval);
+  const ch5CaseTotal = 10 + Skills.getTimerBonus();
+  State.ch5CaseTimer = (timeLeft !== undefined) ? timeLeft : ch5CaseTotal;
   State.ch5CaseInterval = setInterval(() => {
     State.ch5CaseTimer--;
     const num  = document.getElementById('ch5-timer-num');
@@ -1493,6 +1632,36 @@ async function loadAllScreens() {
   }
 }
 
+function pauseGameplay() {
+  if (State.mpMode) return;
+  State.gamePaused = true;
+  clearInterval(State.ch3TimerInterval);
+  clearInterval(State.ch5TimerInterval);
+  clearInterval(State.ch5CaseInterval);
+}
+
+function resumeGameplay() {
+  State.gamePaused = false;
+  
+  if (document.getElementById('screen-ch3')?.classList.contains('active')) {
+    const caseIdx = State.mpMode
+      ? (State.mpCaseOrder[State.ch3CaseIndex] ?? State.ch3CaseIndex)
+      : State.ch3CaseIndex;
+    const c = GAME_DATA.chapter3.cases[caseIdx];
+    if (c && !State.ch3AwaitingNext) {
+      startCh3Timer(c, State.ch3Timer);
+    }
+  } else if (document.getElementById('screen-ch5')?.classList.contains('active')) {
+    if (!State.ch5BossDefeated) {
+      startCh5Timer();
+      const c = State.ch5Pool[State.ch5PoolIndex];
+      if (c && !State.ch5AwaitingNext) {
+        startCh5CaseTimer(c, State.ch5CaseTimer);
+      }
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   await loadAllScreens();
   Skills.init();
@@ -1505,7 +1674,23 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
   document.getElementById('btn-pause')?.addEventListener('click', () => {
     Audio.click();
-    Skills.openModal();
+    if (!State.mpMode) {
+      pauseGameplay();
+      Skills.openModal(() => {
+        resumeGameplay();
+      });
+    } else {
+      Skills.openModal();
+    }
+  });
+  document.getElementById('btn-exit-mission')?.addEventListener('click', () => {
+    Audio.click();
+    if (confirm('Bạn có chắc chắn muốn thoát khỏi nhiệm vụ này không? Tiến trình của chương hiện tại sẽ bị mất.')) {
+      clearAllGameplayTimers();
+      State.trustScore = 60;
+      updateTrustBar();
+      initMenu();
+    }
   });
 
   document.getElementById('btn-mp-quit')?.addEventListener('click', async () => {
