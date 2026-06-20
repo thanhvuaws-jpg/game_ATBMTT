@@ -6,7 +6,7 @@ const BGM = (() => {
 
   function init() {
     // 1. Tạo đối tượng Audio HTML5
-    audio = new Audio('assets/bgm.mp3');
+    audio = new window.Audio('assets/bgm.mp3');
     audio.loop = true;
     audio.volume = volume;
 
